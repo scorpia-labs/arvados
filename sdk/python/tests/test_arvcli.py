@@ -930,8 +930,8 @@ class TestObjectEditingProcessBase:
         content = "Hello, world!\n"
         setup_editor(content=content)
         with PlainStringEditing() as ed:
-            assert ed.tmp_file is not None
-            assert Path(ed.tmp_file.name).exists()
+            assert ed.tmp_path is not None
+            assert Path(ed.tmp_path).exists()
             run_result = ed.edit()
             assert run_result.returncode == 0
             assert ed.load() == content
@@ -941,20 +941,27 @@ class TestObjectEditingProcessBase:
             setup_editor(content=content)
             ed.edit()
             assert ed.load() == content
-        assert not Path(ed.tmp_file.name).exists()
+        assert not Path(ed.tmp_path).exists()
+
+    def test_replace_editor(self, setup_editor):
+        content = "replaced content\n"
+        setup_editor(action="replace", content=content)
+        with PlainStringEditing("init") as ed:
+            ed.edit()
+            assert ed.load() == content
 
     def test_initial_object(self):
         initial_obj = "init"
         with PlainStringEditing(initial_obj) as ed:
             # Snoop the temp file.
-            with open(ed.tmp_file.name, "r") as t:
+            with open(ed.tmp_path, "r") as t:
                 filled_content = t.read()
         assert filled_content == initial_obj
 
     def test_tempfile_name_prefix(self):
         prefix = "foo-bar"
         with PlainStringEditing(prefix=prefix) as ed:
-            assert Path(ed.tmp_file.name).stem.startswith(f"{prefix}-")
+            assert Path(ed.tmp_path).stem.startswith(f"{prefix}-")
 
     def test_tempfile_name_no_empty_prefix(self):
         # It's risky to do negative tests on the tempfile's actual name because
@@ -969,13 +976,13 @@ class TestObjectEditingProcessBase:
         uuid = "foo-bar"
         initial_obj = {"uuid": uuid}
         with arvcli.JSONEditingProcess(initial_obj) as ed:
-            assert Path(ed.tmp_file.name).stem.startswith(f"{uuid}-")
+            assert Path(ed.tmp_path).stem.startswith(f"{uuid}-")
 
         prefix_override = "foo-bar-baz"
         with arvcli.JSONEditingProcess(
             initial_obj, prefix=prefix_override
         ) as ed:
-            assert Path(ed.tmp_file.name).stem.startswith(f"{prefix_override}-")
+            assert Path(ed.tmp_path).stem.startswith(f"{prefix_override}-")
 
         initial_obj = {}
         ed = arvcli.JSONEditingProcess(initial_obj)
@@ -984,7 +991,7 @@ class TestObjectEditingProcessBase:
     def test_tempfile_name_suffix(self):
         ext = "dat"
         with PlainStringEditing(file_extension=ext) as ed:
-            assert Path(ed.tmp_file.name).suffix == f".{ext}"
+            assert Path(ed.tmp_path).suffix == f".{ext}"
 
     def test_tempfile_name_suffix_no_empty_extension(self):
         # See also the comment for test_tempfile_name_no_empty_prefix().

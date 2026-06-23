@@ -393,7 +393,7 @@ class ObjectEditingProcessBase(AbstractContextManager, abc.ABC):
         ext = self._tmpfile_extension or file_extension
         self.suffix = f".{ext}" if ext else None
 
-        self.tmp_file = None
+        self.tmp_path = None
         self.base_command = self.get_editor_cmdline()
 
     @staticmethod
@@ -426,16 +426,15 @@ class ObjectEditingProcessBase(AbstractContextManager, abc.ABC):
 
     def check_tmp_file(self):
         """Perform a basic sanity check for the temp file being usable."""
-        if self.tmp_file is None or self.tmp_file.closed:
+        if self.tmp_path is None or not os.path.exists(self.tmp_path):
             raise RuntimeError("Temporary file is not available")
 
     def dump(self, obj: Any) -> None:
         """Overwrite the temporary file with the serialized object `obj`."""
         self.check_tmp_file()
         # The following should not be done while the child process is pending.
-        self.tmp_file.truncate(0)
-        self.serialize(obj, self.tmp_file)
-        self.tmp_file.flush()
+        with open(self.tmp_path, "w") as f:
+            self.serialize(obj, f)
 
     def load(self) -> Any:
         """Read the temporary file from the beginning. Returns the deserialized
@@ -444,31 +443,39 @@ class ObjectEditingProcessBase(AbstractContextManager, abc.ABC):
         self.check_tmp_file()
         # Snoop the file to see if it consists of only whitespace characters
         # (including empty lines); if so, return the special value None.
-        with open(self.tmp_file.name, "r") as fdup:
+        with open(self.tmp_path, "r") as fdup:
             if not fdup.read().strip():
                 return None
 
-        self.tmp_file.seek(0)
-        return self.deserialize(self.tmp_file)
+        with open(self.tmp_path, "r") as f:
+            return self.deserialize(f)
 
     def edit(self) -> subprocess.CompletedProcess:
         """Run external editor and wait for it to finish."""
         self.check_tmp_file()
         return subprocess.run(
-            self.base_command + [self.tmp_file.name],
+            self.base_command + [self.tmp_path],
             check=False
         )  # Wait for child.
 
     def __enter__(self):
-        self.tmp_file = NamedTemporaryFile(
-            mode="w+", prefix=self.prefix, suffix=self.suffix
-        )
+        with NamedTemporaryFile(
+            mode="w", prefix=self.prefix, suffix=self.suffix, delete=False
+        ) as f:
+            self.tmp_path = f.name
+
         if self.initial_object is not None:
-            self.dump(self.initial_object)
+            try:
+                self.dump(self.initial_object)
+            except Exception:
+                if self.tmp_path and os.path.exists(self.tmp_path):
+                    os.unlink(self.tmp_path)
+                raise
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self.tmp_file.close()
+        if self.tmp_path and os.path.exists(self.tmp_path):
+            os.unlink(self.tmp_path)
 
 
 class EditingContentError(ValueError):
@@ -997,7 +1004,7 @@ def _handle_external_editor_command(api_client, parser, args) -> NoReturn:
                 editing.edit()
             except OSError as err:
                 cmd_str = shlex.join(
-                    editing.base_command + [editing.tmp_file.name]
+                        editing.base_command + [editing.tmp_path]
                 )
                 print(
                     f"Error: failed to execute editor `{cmd_str}`: {err}",
