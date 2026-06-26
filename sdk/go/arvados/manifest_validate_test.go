@@ -5,11 +5,15 @@
 package arvados
 
 import (
+	check "gopkg.in/check.v1"
 	"strings"
-	"testing"
 )
 
-func TestValidateManifest(t *testing.T) {
+var _ = check.Suite(&ManifestValidateSuite{})
+
+type ManifestValidateSuite struct{}
+
+func (s *ManifestValidateSuite) TestValidateManifest(c *check.C) {
 	tests := []struct {
 		manifest string
 		valid    bool
@@ -134,13 +138,13 @@ func TestValidateManifest(t *testing.T) {
 		err := ValidateManifest(tc.manifest)
 		if tc.valid {
 			if err != nil {
-				t.Errorf("Test %d: expected valid, got error: %v, manifest: %q", i, err, tc.manifest)
+				c.Check(err, check.IsNil, check.Commentf("Test %d: expected valid, got error: %v, manifest: %q", i, err, tc.manifest))
 			}
 		} else {
 			if err == nil {
-				t.Errorf("Test %d: expected invalid, got no error, manifest: %q", i, tc.manifest)
+				c.Check(err, check.NotNil, check.Commentf("Test %d: expected invalid, got no error, manifest: %q", i, tc.manifest))
 			} else if !strings.Contains(err.Error(), tc.errMatch) {
-				t.Errorf("Test %d: error %q does not match %q, manifest: %q", i, err.Error(), tc.errMatch, tc.manifest)
+				c.Check(strings.Contains(err.Error(), tc.errMatch), check.Equals, true, check.Commentf("Test %d: error %q does not match %q, manifest: %q", i, err.Error(), tc.errMatch, tc.manifest))
 			}
 		}
 	}
