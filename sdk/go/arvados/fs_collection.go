@@ -1778,97 +1778,64 @@ func splitToToks(src []byte, c rune, toks [][]byte) int {
 }
 
 func (dn *dirnode) loadManifest(txt string) error {
-	streams := bytes.Split([]byte(txt), []byte{'\n'})
-	if len(streams[len(streams)-1]) != 0 {
-		return fmt.Errorf("line %d: no trailing newline", len(streams))
-	}
-	streams = streams[:len(streams)-1]
+	scanner := NewManifestScanner(txt)
+
 	segments := []storedSegment{}
 	// streamoffset[n] is the position in the stream of the nth
 	// block, i.e., ∑ segments[j].size ∀ 0≤j<n. We ensure
 	// len(streamoffset) == len(segments) + 1.
 	streamoffset := []int64{0}
-	// To reduce allocs, we reuse a single "pathparts" slice
-	// (pre-split on "/" separators) for the duration of this
-	// func.
-	var pathparts []string
-	// To reduce allocs, we reuse a single "toks" slice of 3 byte
-	// slices.
-	var toks = make([][]byte, 3)
-	for i, stream := range streams {
-		lineno := i + 1
+
+	for scanner.Scan() {
+		stream := scanner.Stream()
 		fnodeCache := make(map[string]*filenode)
-		var anyFileTokens bool
 		var segIdx int
 		segments = segments[:0]
 		streamoffset = streamoffset[:1]
-		pathparts = nil
-		streamparts := 0
-		for i, token := range bytes.Split(stream, []byte{' '}) {
-			if i == 0 {
-				pathparts = strings.Split(manifestUnescape(string(token)), "/")
-				streamparts = len(pathparts)
-				continue
-			}
-			if !bytes.ContainsRune(token, ':') {
-				if anyFileTokens {
-					return fmt.Errorf("line %d: bad file segment %q", lineno, token)
-				}
-				if splitToToks(token, '+', toks) < 2 {
-					return fmt.Errorf("line %d: bad locator %q", lineno, token)
-				}
-				length, err := strconv.ParseInt(string(toks[1]), 10, 32)
-				if err != nil || length < 0 {
-					return fmt.Errorf("line %d: bad locator %q", lineno, token)
-				}
-				streamoffset = append(streamoffset, streamoffset[len(segments)]+int64(length))
-				segments = append(segments, storedSegment{
-					locator: string(token),
-					size:    int(length),
-					offset:  0,
-					length:  int(length),
-				})
-				continue
-			} else if len(segments) == 0 {
-				return fmt.Errorf("line %d: bad locator %q", lineno, token)
-			}
-			if splitToToks(token, ':', toks) != 3 {
-				return fmt.Errorf("line %d: bad file segment %q", lineno, token)
-			}
-			anyFileTokens = true
 
-			offset, err := strconv.ParseInt(string(toks[0]), 10, 64)
-			if err != nil || offset < 0 {
-				return fmt.Errorf("line %d: bad file segment %q", lineno, token)
-			}
-			length, err := strconv.ParseInt(string(toks[1]), 10, 64)
-			if err != nil || length < 0 {
-				return fmt.Errorf("line %d: bad file segment %q", lineno, token)
-			}
-			fnode, cached := fnodeCache[string(toks[2])]
+		pathparts := strings.Split(stream.StreamName, "/")
+		streamparts := len(pathparts)
+
+		for _, loc := range stream.Locators {
+			streamoffset = append(streamoffset, streamoffset[len(segments)]+int64(loc.Size))
+			segments = append(segments, storedSegment{
+				locator: loc.Text,
+				size:    loc.Size,
+				offset:  0,
+				length:  loc.Size,
+			})
+		}
+
+		for _, ft := range stream.FileTokens {
+			fnode, cached := fnodeCache[ft.Name]
 			if !cached {
-				if !bytes.ContainsAny(toks[2], `\/`) {
+				if !strings.ContainsAny(ft.Name, `\/`) {
 					// optimization for a common case
-					pathparts = append(pathparts[:streamparts], string(toks[2]))
+					pathparts = append(pathparts[:streamparts], ft.Name)
 				} else {
-					pathparts = append(pathparts[:streamparts], strings.Split(manifestUnescape(string(toks[2])), "/")...)
+					pathparts = append(pathparts[:streamparts], strings.Split(ft.Name, "/")...)
 				}
+				var err error
 				fnode, err = dn.createFileAndParents(pathparts)
 				if err != nil {
-					return fmt.Errorf("line %d: cannot use name %q with length %d: %s", lineno, toks[2], length, err)
+					return fmt.Errorf("line %d: cannot use name %q with length %d: %s", scanner.lineno, ft.Name, ft.Length, err)
 				}
-				fnodeCache[string(toks[2])] = fnode
+				fnodeCache[ft.Name] = fnode
 			}
 			if fnode == nil {
 				// name matches an existing directory
-				if length != 0 {
-					return fmt.Errorf("line %d: cannot use name %q with length %d: is a directory", lineno, toks[2], length)
+				if ft.Length != 0 {
+					return fmt.Errorf("line %d: cannot use name %q with length %d: is a directory", scanner.lineno, ft.Name, ft.Length)
 				}
 				// Special case: an empty file used as
 				// a marker to preserve an otherwise
 				// empty directory in a manifest.
 				continue
 			}
+
+			offset := ft.Position
+			length := ft.Length
+
 			// Map the stream offset/range coordinates to
 			// block/offset/range coordinates and add
 			// corresponding storedSegments to the filenode
@@ -1913,18 +1880,12 @@ func (dn *dirnode) loadManifest(txt string) error {
 				})
 			}
 			if segIdx == len(segments) && streamoffset[segIdx] < offset+length {
-				return fmt.Errorf("line %d: invalid segment in %d-byte stream: %q", lineno, streamoffset[segIdx], token)
+				// the scanner validates everything, but keep this check for safety
+				return fmt.Errorf("line %d: invalid segment in %d-byte stream", scanner.lineno, streamoffset[segIdx])
 			}
 		}
-		if !anyFileTokens {
-			return fmt.Errorf("line %d: no file segments", lineno)
-		} else if len(segments) == 0 {
-			return fmt.Errorf("line %d: no locators", lineno)
-		} else if streamparts == 0 {
-			return fmt.Errorf("line %d: no stream name", lineno)
-		}
 	}
-	return nil
+	return scanner.Err()
 }
 
 // only safe to call from loadManifest -- no locking.
