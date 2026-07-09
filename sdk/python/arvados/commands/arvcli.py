@@ -424,29 +424,6 @@ class ObjectEditingProcessBase(AbstractContextManager, abc.ABC):
         text. Returns the object deserialized from the text content.
         """
 
-    def _raise_parse_error(
-        self, file: TextIO, err: Exception, line: int = 0, column: int = 0
-    ) -> NoReturn:
-        path = getattr(file, "name", "<unknown path>")
-        raise self.input_error_type(
-            path=path, line=line, column=column,
-            original_exception=err
-        )
-
-    def _validate_mapping(
-        self, obj: Any, file: TextIO, format_name: str
-    ) -> Mapping[str, Any]:
-        if not isinstance(obj, Mapping):
-            path = getattr(file, "name", "<unknown path>")
-            raise self.input_error_type(
-                path=path,
-                original_exception=ValueError(
-                    f"{format_name} input has type '{type(obj).__name__}',"
-                    " not a valid Arvados object"
-                )
-            )
-        return obj
-
     def check_tmp_file(self):
         """Perform a basic sanity check for the temp file being usable."""
         if self.tmp_file is None or self.tmp_file.closed:
@@ -523,7 +500,37 @@ class EditingContentError(ValueError):
         return msg
 
 
-class JSONEditingProcess(ObjectEditingProcessBase):
+class _ParsingHelperMixin:
+    """Mixin to provide shared error handling and validation logic for parsing
+    content from an external editor. Requires `input_error_type` to be defined
+    on the class.
+    """
+
+    def _raise_parse_error(
+        self, file: TextIO, err: Exception, line: int = 0, column: int = 0
+    ) -> NoReturn:
+        path = getattr(file, "name", "<unknown path>")
+        raise self.input_error_type(
+            path=path, line=line, column=column,
+            original_exception=err
+        )
+
+    def _validate_mapping(
+        self, obj: Any, file: TextIO, format_name: str
+    ) -> Mapping[str, Any]:
+        if not isinstance(obj, Mapping):
+            path = getattr(file, "name", "<unknown path>")
+            raise self.input_error_type(
+                path=path,
+                original_exception=ValueError(
+                    f"{format_name} input has type '{type(obj).__name__}',"
+                    " not a valid Arvados object"
+                )
+            )
+        return obj
+
+
+class JSONEditingProcess(_ParsingHelperMixin, ObjectEditingProcessBase):
     """Subclass of editing process tuned for JSON files."""
     _tmpfile_extension = "json"
     input_error_type = functools.partial(
@@ -552,7 +559,7 @@ class JSONEditingProcess(ObjectEditingProcessBase):
         return self._validate_mapping(obj, file, "JSON")
 
 
-class YAMLEditingProcess(ObjectEditingProcessBase):
+class YAMLEditingProcess(_ParsingHelperMixin, ObjectEditingProcessBase):
     """Subclass of editing process tuned for YAML files."""
     _tmpfile_extension = "yml"
     input_error_type = functools.partial(
