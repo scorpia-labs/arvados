@@ -424,6 +424,29 @@ class ObjectEditingProcessBase(AbstractContextManager, abc.ABC):
         text. Returns the object deserialized from the text content.
         """
 
+    def _raise_parse_error(
+        self, file: TextIO, err: Exception, line: int = 0, column: int = 0
+    ) -> NoReturn:
+        path = getattr(file, "name", "<unknown path>")
+        raise self.input_error_type(
+            path=path, line=line, column=column,
+            original_exception=err
+        )
+
+    def _validate_mapping(
+        self, obj: Any, file: TextIO, format_name: str
+    ) -> Mapping[str, Any]:
+        if not isinstance(obj, Mapping):
+            path = getattr(file, "name", "<unknown path>")
+            raise self.input_error_type(
+                path=path,
+                original_exception=ValueError(
+                    f"{format_name} input has type '{type(obj).__name__}',"
+                    " not a valid Arvados object"
+                )
+            )
+        return obj
+
     def check_tmp_file(self):
         """Perform a basic sanity check for the temp file being usable."""
         if self.tmp_file is None or self.tmp_file.closed:
@@ -520,25 +543,13 @@ class JSONEditingProcess(ObjectEditingProcessBase):
         return json.dump(obj, file, indent=self.indent)
 
     def deserialize(self, file: TextIO) -> Mapping[str, Any]:
-        path = getattr(file, "name", "<unknown path>")
         try:
             obj = json.load(file)
         except json.JSONDecodeError as err:
-            line = getattr(err, "lineno", 0)
-            column = getattr(err, "colno", 0)
-            raise self.input_error_type(
-                path=path, line=line, column=column,
-                original_exception=err
+            self._raise_parse_error(
+                file, err, getattr(err, "lineno", 0), getattr(err, "colno", 0)
             )
-        if not isinstance(obj, Mapping):
-            raise self.input_error_type(
-                path=path,
-                original_exception=ValueError(
-                    f"JSON input has type '{type(obj).__name__}',"
-                    " not a valid Arvados object"
-                )
-            )
-        return obj
+        return self._validate_mapping(obj, file, "JSON")
 
 
 class YAMLEditingProcess(ObjectEditingProcessBase):
@@ -552,29 +563,14 @@ class YAMLEditingProcess(ObjectEditingProcessBase):
         return yaml.dump(obj, file)
 
     def deserialize(self, file: TextIO) -> Mapping[str, Any]:
-        path = getattr(file, "name", "<unknown path>")
         try:
             obj = yaml.load(file)
         except YAMLError as err:
-            if problem_mark := getattr(err, "problem_mark", None):
-                line = getattr(problem_mark, "line", 0)
-                column = getattr(problem_mark, "column", 0)
-            else:
-                line = 0
-                column = 0
-            raise self.input_error_type(
-                path=path, line=line, column=column,
-                original_exception=err
-            )
-        if not isinstance(obj, Mapping):
-            raise self.input_error_type(
-                path=path,
-                original_exception=ValueError(
-                    f"YAML input has type '{type(obj).__name__}',"
-                    " not a valid Arvados object"
-                )
-            )
-        return obj
+            problem_mark = getattr(err, "problem_mark", None)
+            line = getattr(problem_mark, "line", 0) if problem_mark else 0
+            column = getattr(problem_mark, "column", 0) if problem_mark else 0
+            self._raise_parse_error(file, err, line, column)
+        return self._validate_mapping(obj, file, "YAML")
 
 
 class FullHelpOnErrorArgumentParser(argparse.ArgumentParser):
