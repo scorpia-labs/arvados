@@ -34,7 +34,7 @@ def parse_arguments(arguments):
     arg_parser.add_argument('--days', type=int, help='Number of days before "end" to start the report (or use --start)')
     arg_parser.add_argument('--cost-report-file', type=str, help='Export cost report to specified CSV file')
     arg_parser.add_argument('--include-workflow-steps', default=False,
-                            action="store_true", help='Include individual workflow steps (optional)')
+                            action="store_true", help='Include individual workflow steps in cost report (optional)')
     arg_parser.add_argument('--columns', type=str, help="""Cost report columns (optional), must be comma separated with no spaces between column names.
     Available columns are: Project, ProjectUUID, Workflow, WorkflowUUID, Step, StepUUID, Sample, SampleUUID, User, UserUUID, Submitted, Started, Runtime, Cost""")
     arg_parser.add_argument('--exclude', type=str, help="Exclude workflows containing this substring (may be a regular expression)")
