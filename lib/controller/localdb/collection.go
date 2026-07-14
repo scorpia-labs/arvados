@@ -290,7 +290,7 @@ func (conn *Conn) applyReplaceFilesOption(ctx context.Context, fromUUID string, 
 			srccoll := &arvados.Collection{ManifestText: providedManifestText}
 			srcfs, err = srccoll.FileSystem(&arvados.StubClient{}, &arvados.StubClient{})
 			if err != nil {
-				if errors.Is(err, arvados.ErrInvalidManifestText) {
+				if errors.Is(err, arvados.ErrMalformedManifestText) {
 					return nil, httpserver.Errorf(http.StatusBadRequest, "replace_files: %w", err)
 				}
 				return nil, err

@@ -456,12 +456,12 @@ func (s *replaceFilesSuite) TestUnusedManifestText_Update(c *check.C) {
 	c.Check(err, check.ErrorMatches, `.*manifest_text.*would not be used.*`)
 }
 
-func (s *replaceFilesSuite) TestInvalidManifestText_Create(c *check.C) {
+func (s *replaceFilesSuite) TestMalformedManifestText_Create(c *check.C) {
 	// NOTE: No newline at the end.
-	invalidManifestText := ". d41d8cd98f00b204e9800998ecf8427e+0 0:0:foo"
+	malformedManifestText := ". d41d8cd98f00b204e9800998ecf8427e+0 0:0:foo"
 	_, err := s.localdb.CollectionCreate(s.userctx, arvados.CreateOptions{
 		Attrs: map[string]interface{}{
-			"manifest_text": invalidManifestText,
+			"manifest_text": malformedManifestText,
 		},
 		ReplaceFiles: map[string]string{
 			"/bar.txt": "manifest_text/foo",
@@ -469,15 +469,15 @@ func (s *replaceFilesSuite) TestInvalidManifestText_Create(c *check.C) {
 	var se httpserver.HTTPStatusError
 	c.Check(errors.As(err, &se), check.Equals, true)
 	c.Check(se.HTTPStatus(), check.Equals, http.StatusBadRequest)
-	c.Check(err, check.ErrorMatches, `.* invalid manifest_text: .*`)
+	c.Check(err, check.ErrorMatches, `.* malformed manifest_text: .*`)
 }
 
-func (s *replaceFilesSuite) TestInvalidManifestText_Update(c *check.C) {
-	invalidManifestText := ". d41d8cd98f00b204e9800998ecf8427e+0 0:0:foo"
+func (s *replaceFilesSuite) TestMalformedManifestText_Update(c *check.C) {
+	malformedManifestText := ". d41d8cd98f00b204e9800998ecf8427e+0 0:0:foo"
 	_, err := s.localdb.CollectionUpdate(s.userctx, arvados.UpdateOptions{
 		UUID: s.tmp.UUID,
 		Attrs: map[string]interface{}{
-			"manifest_text": invalidManifestText,
+			"manifest_text": malformedManifestText,
 		},
 		ReplaceFiles: map[string]string{
 			"/bar.txt": "manifest_text/foo",
@@ -485,7 +485,7 @@ func (s *replaceFilesSuite) TestInvalidManifestText_Update(c *check.C) {
 	var se httpserver.HTTPStatusError
 	c.Check(errors.As(err, &se), check.Equals, true)
 	c.Check(se.HTTPStatus(), check.Equals, http.StatusBadRequest)
-	c.Check(err, check.ErrorMatches, `.* invalid manifest_text: .*`)
+	c.Check(err, check.ErrorMatches, `.* malformed manifest_text: .*`)
 }
 
 func (s *replaceFilesSuite) TestConcurrentRename(c *check.C) {
