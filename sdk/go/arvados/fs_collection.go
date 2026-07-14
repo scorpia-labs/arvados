@@ -1780,7 +1780,8 @@ func splitToToks(src []byte, c rune, toks [][]byte) int {
 var ErrMalformedManifestText = errors.New("malformed manifest_text")
 
 func badmtxtErrorf(format string, args ...interface{}) error {
-	return fmt.Errorf("%w: %s", ErrMalformedManifestText, fmt.Sprintf(format, args...))
+	allArgs := append([]interface{}{ErrMalformedManifestText}, args...)
+	return fmt.Errorf("%w: "+format, allArgs...)
 }
 
 func (dn *dirnode) loadManifest(txt string) error {
