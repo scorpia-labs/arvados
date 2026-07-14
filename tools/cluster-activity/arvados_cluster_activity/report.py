@@ -44,9 +44,7 @@ class BytesFormatter:
 
 
 bytes_base2_fmt = BytesFormatter(1024, ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB'])
-format_with_suffix_base2 = bytes_base2_fmt
 bytes_si_fmt = BytesFormatter(1000, ['KB', 'MB', 'GB', 'TB', 'PB', 'EB'])
-format_with_suffix_base10 = bytes_si_fmt
 
 def cost_fmt(cost):
     return f'${cost:,.02f}'

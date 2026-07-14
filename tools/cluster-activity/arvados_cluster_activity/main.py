@@ -19,7 +19,7 @@ try:
 except ImportError as e:
     PrometheusConnect = None
 
-from arvados_cluster_activity.report import ClusterActivityReport, aws_monthly_cost, format_with_suffix_base2
+from arvados_cluster_activity.report import ClusterActivityReport, aws_monthly_cost, bytes_base2_fmt
 from arvados_cluster_activity.prometheus import get_metric_usage, get_data_usage
 
 from arvados_cluster_activity._version import __version__
@@ -105,8 +105,8 @@ def print_data_usage(prom, timestamp, cluster, label):
 
     monthly_cost = aws_monthly_cost(value)
     print(label,
-          "%s apparent," % (format_with_suffix_base2(value*dedup_ratio)),
-          "%s actually stored," % (format_with_suffix_base2(value)),
+          "%s apparent," % (bytes_base2_fmt(value*dedup_ratio)),
+          "%s actually stored," % (bytes_base2_fmt(value)),
           "$%.2f monthly S3 storage cost" % monthly_cost)
 
 def print_container_usage(prom, start_time, end_time, metric, label, fn=None):
