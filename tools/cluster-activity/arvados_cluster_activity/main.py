@@ -19,7 +19,7 @@ try:
 except ImportError as e:
     PrometheusConnect = None
 
-from arvados_cluster_activity.report import ClusterActivityReport, aws_monthly_cost, format_with_suffix_base2
+from arvados_cluster_activity.report import ClusterActivityReport, aws_monthly_cost, bytes_base2_fmt
 from arvados_cluster_activity.prometheus import get_metric_usage, get_data_usage
 
 from arvados_cluster_activity._version import __version__
@@ -34,7 +34,7 @@ def parse_arguments(arguments):
     arg_parser.add_argument('--days', type=int, help='Number of days before "end" to start the report (or use --start)')
     arg_parser.add_argument('--cost-report-file', type=str, help='Export cost report to specified CSV file')
     arg_parser.add_argument('--include-workflow-steps', default=False,
-                            action="store_true", help='Include individual workflow steps (optional)')
+                            action="store_true", help='Include individual workflow steps in cost report (optional)')
     arg_parser.add_argument('--columns', type=str, help="""Cost report columns (optional), must be comma separated with no spaces between column names.
     Available columns are: Project, ProjectUUID, Workflow, WorkflowUUID, Step, StepUUID, Sample, SampleUUID, User, UserUUID, Submitted, Started, Runtime, Cost""")
     arg_parser.add_argument('--exclude', type=str, help="Exclude workflows containing this substring (may be a regular expression)")
@@ -105,8 +105,8 @@ def print_data_usage(prom, timestamp, cluster, label):
 
     monthly_cost = aws_monthly_cost(value)
     print(label,
-          "%s apparent," % (format_with_suffix_base2(value*dedup_ratio)),
-          "%s actually stored," % (format_with_suffix_base2(value)),
+          "%s apparent," % (bytes_base2_fmt(value*dedup_ratio)),
+          "%s actually stored," % (bytes_base2_fmt(value)),
           "$%.2f monthly S3 storage cost" % monthly_cost)
 
 def print_container_usage(prom, start_time, end_time, metric, label, fn=None):
@@ -178,18 +178,26 @@ def main(arguments=None):
 
     args, since, to = parse_arguments(arguments)
 
-    logging.getLogger().setLevel(logging.INFO)
+    logging.basicConfig(
+        level=logging.INFO,
+    )
 
-    reporter = ClusterActivityReport(get_prometheus_client())
+    prom_client = get_prometheus_client()
+    reporter = ClusterActivityReport(
+        since,
+        to,
+        prom_client=prom_client,
+        exclude=args.exclude,
+    )
     if args.cost_report_file:
         with open(args.cost_report_file, "wt") as f:
-            reporter.csv_report(since, to, f, args.include_workflow_steps, args.columns, args.exclude)
+            reporter.csv_report(f, args.columns, include_steps=args.include_workflow_steps)
     else:
         logging.info("Use --cost-report-file to get a CSV file of workflow runs")
 
     if args.html_report_file:
         with open(args.html_report_file, "wt") as f:
-            f.write(reporter.html_report(since, to, args.exclude, args.include_workflow_steps))
+            f.write(reporter.html_report())
     else:
         logging.info("Use --html-report-file to get HTML report of cluster usage")
 
