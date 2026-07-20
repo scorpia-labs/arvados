@@ -39,8 +39,9 @@ def parse_arguments(arguments):
 
     arg_parser.add_argument('--html-report-file', type=str, help='Export HTML report to specified file')
     arg_parser.add_argument(
-        '--version', action='version', version="%s %s" % (sys.argv[0], __version__),
-        help='Print version and exit.')
+        '--version', action='version', version=f"%(prog)s {__version__}",
+        help='Print version and exit.'
+    )
 
     arg_parser.add_argument('--cluster', type=str, help='Cluster to query for prometheus stats')
     arg_parser.add_argument('--prometheus-auth', type=str, help='Authorization file with prometheus info')
