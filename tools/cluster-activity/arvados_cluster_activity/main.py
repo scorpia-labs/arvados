@@ -4,28 +4,24 @@
 # SPDX-License-Identifier: AGPL-3.0
 
 import argparse
-import sys
-
-import arvados
-import arvados.util
-import ciso8601
-import csv
-import os
+import base64
+from datetime import timedelta, timezone, datetime
 import logging
-import re
+import os
+import sys
 
 try:
     from prometheus_api_client import PrometheusConnect
 except ImportError as e:
     PrometheusConnect = None
 
+import arvados
+import arvados.util
+
 from arvados_cluster_activity.report import ClusterActivityReport, aws_monthly_cost, bytes_base2_fmt
 from arvados_cluster_activity.prometheus import get_metric_usage, get_data_usage
-
 from arvados_cluster_activity._version import __version__
 
-from datetime import timedelta, timezone, datetime
-import base64
 
 def parse_arguments(arguments):
     arg_parser = argparse.ArgumentParser()
