@@ -10,9 +10,11 @@ import logging
 import os
 import sys
 
+prometheus_import_error = None
 try:
     from prometheus_api_client import PrometheusConnect
 except ImportError as e:
+    prometheus_import_error = e
     PrometheusConnect = None
 
 import arvados
@@ -86,7 +88,7 @@ def parse_arguments(arguments):
         with open(args.prometheus_auth, "rt") as f:
             for line in f:
                 if line.startswith("export "):
-                   line = line[7:]
+                    line = line[7:]
                 sp = line.strip().split("=")
                 if sp[0].startswith("PROMETHEUS_"):
                     os.environ[sp[0]] = sp[1]
@@ -121,7 +123,7 @@ def print_container_usage(prom, start_time, end_time, metric, label, fn=None):
 
 def get_prometheus_client():
     if PrometheusConnect is None:
-        logging.warn("Failed to import prometheus_api_client client.  Did you include the [prometheus] option when installing the package?  Error was: %s" % e)
+        logging.warn("Failed to import prometheus_api_client client.  Did you include the [prometheus] option when installing the package?  Error was: %s" % prometheus_import_error)
         return None
 
     headers = {}
