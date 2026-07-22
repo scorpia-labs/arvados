@@ -208,26 +208,26 @@ def get_prometheus_client():
         logging.warn("Connecting to Prometheus failed, will not collect activity from Prometheus.  Error was: %s" % e)
         return None
 
-def report_from_prometheus(prom, cluster, since, to):
+def report_from_prometheus(prom, cluster, start_time, end_time):
 
     if not cluster:
         arv_client = arvados.api()
         cluster = arv_client.config()["ClusterID"]
 
-    print(cluster, "between", since, "and", to, "timespan", (to-since))
+    print(cluster, "between", start_time, "and", end_time, "timespan", (end_time - start_time))
 
     try:
-        print_data_usage(prom, since, cluster, "at start:")
+        print_data_usage(prom, start_time, cluster, "at start:")
     except:
         logging.exception("Failed to get start value")
 
     try:
-        print_data_usage(prom, to - timedelta(minutes=240), cluster, "current :")
+        print_data_usage(prom, end_time - timedelta(minutes=240), cluster, "current :")
     except:
         logging.exception("Failed to get end value")
 
-    print_container_usage(prom, since, to, "arvados_dispatchcloud_containers_running{cluster='%s'}" % cluster, '%.1f container hours', lambda x: x/60)
-    print_container_usage(prom, since, to, "sum(arvados_dispatchcloud_instances_price{cluster='%s'})" % cluster, '$%.2f spent on compute', lambda x: x/60)
+    print_container_usage(prom, start_time, end_time, "arvados_dispatchcloud_containers_running{cluster='%s'}" % cluster, '%.1f container hours', lambda x: x/60)
+    print_container_usage(prom, start_time, end_time, "sum(arvados_dispatchcloud_instances_price{cluster='%s'})" % cluster, '$%.2f spent on compute', lambda x: x/60)
     print()
 
 
