@@ -139,4 +139,4 @@ class TestGetArgumentParser:
         args = self.parser.parse_args(["--days", f"{n_days!s}"])
         assert isinstance(args.end, datetime.datetime)
         assert isinstance(args.start, datetime.datetime)
-        assert (args.end - args.start).days == n_days
+        assert (args.end - args.start) == datetime.timedelta(days=n_days)
