@@ -8,7 +8,6 @@ import base64
 from datetime import timedelta, timezone, datetime
 import logging
 import os
-import sys
 
 prometheus_import_error = None
 try:
