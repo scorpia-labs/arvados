@@ -85,6 +85,8 @@ class _ArgTypes:
     def load_prometheus_auth(path: str) -> None:
         """Loads Prometheus environment variables from `path` into the current
         process's `os.environ`.
+
+        Returns `path` unmodified if the operation succeeds.
         """
         prom_vars = {}
         try:
@@ -98,6 +100,7 @@ class _ArgTypes:
         except OSError as err:
             raise argparse.ArgumentTypeError(str(err)) from None
         os.environ.update(prom_vars)
+        return path
 
 
 def get_argument_parser(prog: str | None = None) -> argparse.ArgumentParser:
