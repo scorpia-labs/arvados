@@ -25,11 +25,111 @@ from arvados_cluster_activity.prometheus import get_metric_usage, get_data_usage
 from arvados_cluster_activity._version import __version__
 
 
-def parse_arguments(arguments):
-    arg_parser = argparse.ArgumentParser()
-    arg_parser.add_argument('--start', help='Start date for the report in YYYY-MM-DD format (UTC) (or use --days)')
-    arg_parser.add_argument('--end', help='End date for the report in YYYY-MM-DD format (UTC), default "now"')
-    arg_parser.add_argument('--days', type=int, help='Number of days before "end" to start the report (or use --start)')
+class _ArgTypes:
+    """Namespace class that holds types and utilities for argument parsing
+    and validation.
+    """
+    @staticmethod
+    def date_arg(text: str | None = None) -> datetime:
+        """Convert input string in the form of YYYY-MM-DD to a UTC-timezone
+        datetime object for the specified date at 00h00m00s ("midnight").  If
+        the input is the empty string, return the midnight datetime of the
+        current UTC day.
+        """
+        if text is None:
+            dt_obj = datetime.now(timezone.utc)
+        else:
+            try:
+                dt_obj = datetime.strptime(text, "%Y-%m-%d")
+            except ValueError:
+                # strptime may raise ValueError with a cryptic message, e.g.
+                # strptime("2026-01-32", "%Y-%m-%d") -> "unconverted data
+                # remains: 2" (tested in Pythons 3.10 -- 3.13), so we provide a
+                # clear and fiendly message.
+                raise argparse.ArgumentTypeError(
+                    f"invalid date: {text!r}"
+                ) from None
+        return dt_obj.replace(
+            hour=0, minute=0, second=0, microsecond=0, tzinfo=timezone.utc
+        )
+
+    @staticmethod
+    def positive_days(text: str) -> timedelta:
+        """Returns a timedelta of N days from the input string parsed as an
+        integer. Negative values are invalid.
+        """
+        n = int(text)  # Let ValueError propagate.
+        if n < 0:
+            raise ValueError(f"not a positive integer: {text!r}")
+        return timedelta(days=n)
+
+    @staticmethod
+    def n_days_before(src_arg: str) -> type[argparse.Action]:
+        """Make an `argparse.Action` subclass to be used by the "--days"
+        argument. The returned subclass does the following:
+            1. Take the value of the argument named `src_arg`;
+            2. Subtract, from this `src_arg` value, the value of the argument
+               that uses this action; and then,
+            3. Store the subtraction result to the `dest` of the argument that
+               uses this action.
+        """
+        class SubtractFromSrc(argparse.Action):
+            __src = src_arg
+
+            def __call__(self, parser, namespace, values, option_string=None):
+                src_value = getattr(namespace, self.__src)
+                setattr(namespace, self.dest, src_value - values)
+
+        return SubtractFromSrc
+
+    @staticmethod
+    def load_prometheus_auth(path: str) -> None:
+        """Load Prometheus environment variables from `path` into the current
+        process's `os.environ`.
+        """
+        prom_vars = {}
+        try:
+            with open(path, "rt") as f:
+                for line in f:
+                    if line.startswith("export "):
+                        line = line[7:]
+                    sp = line.strip().split("=")
+                    if sp[0].startswith("PROMETHEUS_"):
+                        prom_vars[sp[0]] = sp[1]
+        except OSError as err:
+            raise argparse.ArgumentTypeError(str(err)) from None
+        os.environ.update(prom_vars)
+
+
+def get_argument_parser(prog: str | None = None) -> argparse.ArgumentParser:
+    arg_parser = argparse.ArgumentParser(prog=prog)
+
+    start_date_group = arg_parser.add_mutually_exclusive_group(required=True)
+    start_date_group.add_argument(
+        '--start',
+        type=_ArgTypes.date_arg,
+        help='Start date for the report in YYYY-MM-DD format (UTC)',
+        metavar="DATE"
+    )
+    start_date_group.add_argument(
+        '--days',
+        type=_ArgTypes.positive_days,
+        dest="start",
+        action=_ArgTypes.n_days_before("end"),
+        help='Number of days before "end" to start the report',
+        metavar="N"
+    )
+    arg_parser.add_argument(
+        '--end',
+        type=_ArgTypes.date_arg,
+        help=(
+            'End date for the report in YYYY-MM-DD format (UTC);'
+            ' Default: today'
+        ),
+        metavar="DATE",
+        default=_ArgTypes.date_arg()  # Today.
+    )
+
     arg_parser.add_argument('--cost-report-file', type=str, help='Export cost report to specified CSV file')
     arg_parser.add_argument('--include-workflow-steps', default=False,
                             action="store_true", help='Include individual workflow steps in cost report (optional)')
@@ -44,57 +144,15 @@ def parse_arguments(arguments):
     )
 
     arg_parser.add_argument('--cluster', type=str, help='Cluster to query for prometheus stats')
-    arg_parser.add_argument('--prometheus-auth', type=str, help='Authorization file with prometheus info')
+    arg_parser.add_argument(
+        '--prometheus-auth',
+        type=_ArgTypes.load_prometheus_auth,
+        help='Authorization file with prometheus info',
+        metavar='PATH'
+    )
 
-    args = arg_parser.parse_args(arguments)
+    return arg_parser
 
-    if args.days and args.start:
-        arg_parser.print_help()
-        print("Error: either specify --days or both --start and --end")
-        exit(1)
-
-    if not args.days and not args.start:
-        arg_parser.print_help()
-        print("\nError: either specify --days or both --start and --end")
-        exit(1)
-
-    if (args.start and not args.end):
-        arg_parser.print_help()
-        print("\nError: no start or end date found, either specify --days or both --start and --end")
-        exit(1)
-
-    if args.end:
-        try:
-            to = datetime.strptime(args.end,"%Y-%m-%d")
-        except:
-            arg_parser.print_help()
-            print("\nError: end date must be in YYYY-MM-DD format")
-            exit(1)
-    else:
-        to = datetime.now(timezone.utc)
-
-    if args.days:
-        since = to - timedelta(days=args.days)
-
-    if args.start:
-        try:
-            since = datetime.strptime(args.start,"%Y-%m-%d")
-        except:
-            arg_parser.print_help()
-            print("\nError: start date must be in YYYY-MM-DD format")
-            exit(1)
-
-
-    if args.prometheus_auth:
-        with open(args.prometheus_auth, "rt") as f:
-            for line in f:
-                if line.startswith("export "):
-                    line = line[7:]
-                sp = line.strip().split("=")
-                if sp[0].startswith("PROMETHEUS_"):
-                    os.environ[sp[0]] = sp[1]
-
-    return args, since, to
 
 def print_data_usage(prom, timestamp, cluster, label):
     value, dedup_ratio = get_data_usage(prom, timestamp, cluster)
@@ -172,10 +230,8 @@ def report_from_prometheus(prom, cluster, since, to):
 
 
 def main(arguments=None):
-    if arguments is None:
-        arguments = sys.argv[1:]
-
-    args, since, to = parse_arguments(arguments)
+    parser = get_argument_parser()
+    args = parser.parse_args(arguments)
 
     logging.basicConfig(
         level=logging.INFO,
@@ -183,8 +239,8 @@ def main(arguments=None):
 
     prom_client = get_prometheus_client()
     reporter = ClusterActivityReport(
-        since,
-        to,
+        args.start,
+        args.end,
         prom_client=prom_client,
         exclude=args.exclude,
     )
@@ -201,7 +257,7 @@ def main(arguments=None):
         logging.info("Use --html-report-file to get HTML report of cluster usage")
 
     if not args.cost_report_file and not args.html_report_file:
-        report_from_prometheus(prom, args.cluster, since, to)
+        report_from_prometheus(prom, args.cluster, args.start, args.end)
 
 if __name__ == "__main__":
     main()
