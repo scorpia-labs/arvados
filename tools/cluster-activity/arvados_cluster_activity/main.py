@@ -30,10 +30,10 @@ class _ArgTypes:
     """
     @staticmethod
     def date_arg(text: str | None = None) -> datetime:
-        """Convert input string in the form of YYYY-MM-DD to a UTC-timezone
-        datetime object for the specified date at 00h00m00s ("midnight").  If
-        the input is the empty string, return the midnight datetime of the
-        current UTC day.
+        """Converts the input string in the form of YYYY-MM-DD to a
+        UTC-timezone datetime object for the specified date at 00h00m00s
+        ("midnight"). When called without argument, returns the midnight
+        datetime of the current UTC day.
         """
         if text is None:
             dt_obj = datetime.now(timezone.utc)
@@ -54,7 +54,7 @@ class _ArgTypes:
 
     @staticmethod
     def positive_days(text: str) -> timedelta:
-        """Returns a timedelta of N days from the input string parsed as an
+        """Returns a timedelta of N days with the input string parsed as an
         integer. Negative values are invalid.
         """
         n = int(text)  # Let ValueError propagate.
@@ -64,7 +64,7 @@ class _ArgTypes:
 
     @staticmethod
     def n_days_before(src_arg: str) -> type[argparse.Action]:
-        """Make an `argparse.Action` subclass to be used by the "--days"
+        """Makes an `argparse.Action` subclass to be used by the "--days"
         argument. The returned subclass does the following:
             1. Take the value of the argument named `src_arg`;
             2. Subtract, from this `src_arg` value, the value of the argument
@@ -83,7 +83,7 @@ class _ArgTypes:
 
     @staticmethod
     def load_prometheus_auth(path: str) -> None:
-        """Load Prometheus environment variables from `path` into the current
+        """Loads Prometheus environment variables from `path` into the current
         process's `os.environ`.
         """
         prom_vars = {}
