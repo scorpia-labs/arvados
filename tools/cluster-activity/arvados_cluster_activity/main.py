@@ -257,7 +257,7 @@ def main(arguments=None):
         logging.info("Use --html-report-file to get HTML report of cluster usage")
 
     if not args.cost_report_file and not args.html_report_file:
-        report_from_prometheus(prom, args.cluster, args.start, args.end)
+        report_from_prometheus(prom_client, args.cluster, args.start, args.end)
 
 if __name__ == "__main__":
     main()
