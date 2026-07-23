@@ -122,7 +122,7 @@ class WorkflowRunCSVRow:
 
     @classmethod
     def field_names(cls) -> tuple[str]:
-        return tuple(map(lambda f: f.name, dataclasses.fields(cls)))
+        return tuple(f.name for f in dataclasses.fields(cls))
 
 
 @dataclasses.dataclass(slots=True)
