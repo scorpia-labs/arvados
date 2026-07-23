@@ -145,9 +145,15 @@ def get_argument_parser(prog: str | None = None) -> argparse.ArgumentParser:
         default=_ArgTypes.date_arg()  # Today.
     )
 
-    arg_parser.add_argument('--cost-report-file', type=str, help='Export cost report to specified CSV file')
-    arg_parser.add_argument('--include-workflow-steps', default=False,
-                            action="store_true", help='Include individual workflow steps in cost report (optional)')
+    arg_parser.add_argument(
+        '--cost-report-file',
+        help='Export cost report to specified CSV file',
+        metavar='PATH'
+    )
+    arg_parser.add_argument(
+        '--include-workflow-steps', default=False, action="store_true",
+        help='Include individual workflow steps in cost report (optional)'
+    )
     arg_parser.add_argument(
         '--columns',
         type=_ArgTypes.columns,
@@ -158,15 +164,30 @@ def get_argument_parser(prog: str | None = None) -> argparse.ArgumentParser:
         ),
         metavar="COLUMN[,COLUMN ...]"
     )
-    arg_parser.add_argument('--exclude', type=str, help="Exclude workflows containing this substring (may be a regular expression)")
+    arg_parser.add_argument(
+        '--exclude',
+        help=(
+            "Exclude workflows containing this substring"
+            " (may be a regular expression)"
+        ),
+        metavar="PATTERN"
+    )
 
-    arg_parser.add_argument('--html-report-file', type=str, help='Export HTML report to specified file')
+    arg_parser.add_argument(
+        '--html-report-file',
+        help='Export HTML report to specified file',
+        metavar='PATH'
+    )
     arg_parser.add_argument(
         '--version', action='version', version=f"%(prog)s {__version__}",
         help='Print version and exit.'
     )
 
-    arg_parser.add_argument('--cluster', type=str, help='Cluster to query for prometheus stats')
+    arg_parser.add_argument(
+        '--cluster',
+        help='Cluster to query for prometheus stats',
+        metavar='CLUSTER-ID'
+    )
     arg_parser.add_argument(
         '--prometheus-auth',
         type=_ArgTypes.load_prometheus_auth,
