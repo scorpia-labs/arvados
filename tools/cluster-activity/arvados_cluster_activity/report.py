@@ -99,6 +99,33 @@ def aws_monthly_cost(value):
 
 
 @dataclasses.dataclass(slots=True)
+class WorkflowRunCSVRow:
+    Project: str
+    ProjectUUID: str
+    Workflow: str
+    WorkflowUUID: str
+    Step: str
+    StepUUID: str
+    Sample: str
+    SampleUUID: str
+    User: str
+    UserUUID: str
+    Submitted: str
+    Started: str
+    Finished: str
+    Runtime: str
+    Cost: str
+    CumulativeCost: str
+
+    def asdict(self, **kwargs) -> dict[str, str]:
+        return dataclasses.asdict(self, **kwargs)
+
+    @classmethod
+    def field_names(cls) -> tuple[str]:
+        return tuple(map(lambda f: f.name, dataclasses.fields(cls)))
+
+
+@dataclasses.dataclass(slots=True)
 class WorkflowRun:
     """Encapsulate and query a run container
 
@@ -187,26 +214,26 @@ class WorkflowRun:
         else:
             return self.template_uuid(default)
 
-    def csv_row(self):
+    def csv_row(self) -> dict[str, str]:
         started, finished, runtime = self.start_end_runtime()
-        return {
-            'Project': self.owner_name(),
-            'ProjectUUID': self.request['owner_uuid'],
-            'Workflow': self.workflow_name('workflow run from command line'),
-            'WorkflowUUID': self.template_uuid('none'),
-            'Step': self.step_name(),
-            'StepUUID': self.request['uuid'],
-            'Sample': self.request['name'],
-            'SampleUUID': self.request['uuid'],
-            'User': self.user_name(),
-            'UserUUID': self.request['modified_by_user_uuid'],
-            'Submitted': datetime_fmt(self.created_at()),
-            'Started': datetime_fmt(started),
-            'Finished': datetime_fmt(finished),
-            'Runtime': duration_hms_fmt(runtime),
-            'Cost': self.container_cost(),
-            'CumulativeCost': self.cumulative_cost(),
-        }
+        return WorkflowRunCSVRow(
+            Project=self.owner_name(),
+            ProjectUUID=self.request['owner_uuid'],
+            Workflow=self.workflow_name('workflow run from command line'),
+            WorkflowUUID=self.template_uuid('none'),
+            Step=self.step_name(),
+            StepUUID=self.request['uuid'],
+            Sample=self.request['name'],
+            SampleUUID=self.request['uuid'],
+            User=self.user_name(),
+            UserUUID=self.request['modified_by_user_uuid'],
+            Submitted=datetime_fmt(self.created_at()),
+            Started=datetime_fmt(started),
+            Finished=datetime_fmt(finished),
+            Runtime=duration_hms_fmt(runtime),
+            Cost=self.container_cost(),
+            CumulativeCost=self.cumulative_cost(),
+        ).asdict()
 
 
 @dataclasses.dataclass(slots=True)

@@ -18,7 +18,7 @@ except ImportError as e:
 
 import arvados
 
-from arvados_cluster_activity.report import ClusterActivityReport, aws_monthly_cost, bytes_base2_fmt
+from arvados_cluster_activity.report import ClusterActivityReport, aws_monthly_cost, bytes_base2_fmt, WorkflowRunCSVRow
 from arvados_cluster_activity.prometheus import get_metric_usage, get_data_usage
 from arvados_cluster_activity._version import __version__
 
@@ -101,19 +101,16 @@ class _ArgTypes:
         os.environ.update(prom_vars)
         return path
 
-    VALID_COLUMNS = frozenset((
-        'Project', 'ProjectUUID', 'Workflow', 'WorkflowUUID', 'Step',
-        'StepUUID', 'Sample', 'SampleUUID', 'User', 'UserUUID', 'Submitted',
-        'Started', 'Runtime', 'Cost'
-    ))
+    VALID_FIELDS = WorkflowRunCSVRow.field_names()
 
     @staticmethod
     def columns(text: str) -> tuple[str]:
         # We can be more lenient with space characters around commas, but still
         # expect the arg value as one string, for compatibility.
+        valid_fields = frozenset(_ArgTypes.VALID_FIELDS)
         result = []
         for elem in map(str.strip, text.split(",")):
-            if elem not in _ArgTypes.VALID_COLUMNS:
+            if elem not in valid_fields:
                 raise ValueError(f"invalid column name: {elem!r}")
             result.append(elem)
         return tuple(result)
@@ -156,9 +153,8 @@ def get_argument_parser(prog: str | None = None) -> argparse.ArgumentParser:
         type=_ArgTypes.columns,
         help=(
             "Cost report columns (optional), must be comma separated with no"
-            " spaces between column names.  Available columns are: Project,"
-            " ProjectUUID, Workflow, WorkflowUUID, Step, StepUUID, Sample,"
-            " SampleUUID, User, UserUUID, Submitted, Started, Runtime, Cost."
+            " spaces between column names.  Available columns are:"
+            f" {', '.join(_ArgTypes.VALID_FIELDS)}."
         ),
         metavar="COLUMN[,COLUMN ...]"
     )
