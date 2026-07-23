@@ -82,7 +82,7 @@ class _ArgTypes:
         return SubtractFromSrc
 
     @staticmethod
-    def load_prometheus_auth(path: str) -> None:
+    def load_prometheus_auth(path: str) -> str:
         """Loads Prometheus environment variables from `path` into the current
         process's `os.environ`.
 
