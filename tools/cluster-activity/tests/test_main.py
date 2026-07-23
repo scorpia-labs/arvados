@@ -131,6 +131,14 @@ class TestLoadPrometheusAuth:
         assert os.environ == old_environ
 
 
+def test_invalid_columns():
+    with pytest.raises(
+        ValueError,
+        match=rf"^invalid column name: {repr('Foo')}$"
+    ):
+        aca_main._ArgTypes.columns("Workflow,Foo,User")
+
+
 class TestGetArgumentParser:
     parser = aca_main.get_argument_parser()
 

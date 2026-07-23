@@ -17,7 +17,6 @@ except ImportError as e:
     PrometheusConnect = None
 
 import arvados
-import arvados.util
 
 from arvados_cluster_activity.report import ClusterActivityReport, aws_monthly_cost, bytes_base2_fmt
 from arvados_cluster_activity.prometheus import get_metric_usage, get_data_usage
@@ -102,6 +101,23 @@ class _ArgTypes:
         os.environ.update(prom_vars)
         return path
 
+    VALID_COLUMNS = frozenset((
+        'Project', 'ProjectUUID', 'Workflow', 'WorkflowUUID', 'Step',
+        'StepUUID', 'Sample', 'SampleUUID', 'User', 'UserUUID', 'Submitted',
+        'Started', 'Runtime', 'Cost'
+    ))
+
+    @staticmethod
+    def columns(text: str) -> tuple[str]:
+        # We can be more lenient with space characters around commas, but still
+        # expect the arg value as one string, for compatibility.
+        result = []
+        for elem in map(str.strip, text.split(",")):
+            if elem not in _ArgTypes.VALID_COLUMNS:
+                raise ValueError(f"invalid column name: {elem!r}")
+            result.append(elem)
+        return tuple(result)
+
 
 def get_argument_parser(prog: str | None = None) -> argparse.ArgumentParser:
     arg_parser = argparse.ArgumentParser(prog=prog)
@@ -135,8 +151,17 @@ def get_argument_parser(prog: str | None = None) -> argparse.ArgumentParser:
     arg_parser.add_argument('--cost-report-file', type=str, help='Export cost report to specified CSV file')
     arg_parser.add_argument('--include-workflow-steps', default=False,
                             action="store_true", help='Include individual workflow steps in cost report (optional)')
-    arg_parser.add_argument('--columns', type=str, help="""Cost report columns (optional), must be comma separated with no spaces between column names.
-    Available columns are: Project, ProjectUUID, Workflow, WorkflowUUID, Step, StepUUID, Sample, SampleUUID, User, UserUUID, Submitted, Started, Runtime, Cost""")
+    arg_parser.add_argument(
+        '--columns',
+        type=_ArgTypes.columns,
+        help=(
+            "Cost report columns (optional), must be comma separated with no"
+            " spaces between column names.  Available columns are: Project,"
+            " ProjectUUID, Workflow, WorkflowUUID, Step, StepUUID, Sample,"
+            " SampleUUID, User, UserUUID, Submitted, Started, Runtime, Cost."
+        ),
+        metavar="COLUMN[,COLUMN ...]"
+    )
     arg_parser.add_argument('--exclude', type=str, help="Exclude workflows containing this substring (may be a regular expression)")
 
     arg_parser.add_argument('--html-report-file', type=str, help='Export HTML report to specified file')

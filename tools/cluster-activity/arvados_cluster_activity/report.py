@@ -844,12 +844,14 @@ class ClusterActivityReport:
         ).html()
 
     def csv_report(self, out, columns, *, include_steps: bool):
-        if columns:
-            columns = columns.split(",")
-        elif include_steps:
-            columns = ("Project", "Workflow", "Step", "Sample", "User", "Submitted", "Runtime", "Cost")
-        else:
-            columns = ("Project", "Workflow", "Sample", "User", "Submitted", "Runtime", "CumulativeCost")
+        if not columns:
+            columns = ((
+                "Project", "Workflow", "Step",
+                "Sample", "User", "Submitted", "Runtime", "Cost"
+            ) if include_steps else (
+                "Project", "Workflow",
+                "Sample", "User", "Submitted", "Runtime", "CumulativeCost"
+            ))
 
         csvwriter = csv.DictWriter(out, fieldnames=columns, extrasaction="ignore")
         csvwriter.writeheader()
