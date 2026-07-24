@@ -62,25 +62,6 @@ class _ArgTypes:
         return timedelta(days=n)
 
     @staticmethod
-    def n_days_before(src_arg: str) -> type[argparse.Action]:
-        """Makes an `argparse.Action` subclass to be used by the "--days"
-        argument. The returned subclass does the following:
-            1. Take the value of the argument named `src_arg`;
-            2. Subtract, from this `src_arg` value, the value of the argument
-               that uses this action; and then,
-            3. Store the subtraction result to the `dest` of the argument that
-               uses this action.
-        """
-        class SubtractFromSrc(argparse.Action):
-            __src = src_arg
-
-            def __call__(self, parser, namespace, values, option_string=None):
-                src_value = getattr(namespace, self.__src)
-                setattr(namespace, self.dest, src_value - values)
-
-        return SubtractFromSrc
-
-    @staticmethod
     def load_prometheus_auth(path: str) -> str:
         """Loads Prometheus environment variables from `path` into the current
         process's `os.environ`.
@@ -129,8 +110,6 @@ def get_argument_parser(prog: str | None = None) -> argparse.ArgumentParser:
     start_date_group.add_argument(
         '--days',
         type=_ArgTypes.positive_days,
-        dest="start",
-        action=_ArgTypes.n_days_before("end"),
         help='Number of days before "end" to start the report',
         metavar="N"
     )
@@ -276,6 +255,8 @@ def report_from_prometheus(prom, cluster, start_time, end_time):
 def main(arguments=None):
     parser = get_argument_parser()
     args = parser.parse_args(arguments)
+    if args.start is None:
+        args.start = args.end - args.days
 
     logging.basicConfig(
         level=logging.INFO,

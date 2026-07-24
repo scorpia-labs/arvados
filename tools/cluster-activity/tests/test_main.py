@@ -97,16 +97,6 @@ class TestDateArgs:
             aca_main._ArgTypes.positive_days(invalid_input)
 
 
-def test_n_days_before():
-    ns = argparse.Namespace()
-    ns.foo = 42
-    action_class_on_foo = aca_main._ArgTypes.n_days_before("foo")
-    action_instance = action_class_on_foo(["--whatever", "-w"], "bar")
-    n = 1
-    action_instance(None, ns, n, "-w")
-    assert ns.bar == ns.foo - n
-
-
 class TestLoadPrometheusAuth:
     def test_valid(self, tmp_path):
         key = "PROMETHEUS_FOO"
@@ -139,12 +129,18 @@ def test_invalid_columns():
         aca_main._ArgTypes.columns("Workflow,Foo,User")
 
 
-class TestGetArgumentParser:
-    parser = aca_main.get_argument_parser()
-
-    def test_default_end_with_days(self):
-        n_days = 1
-        args = self.parser.parse_args(["--days", f"{n_days!s}"])
-        assert isinstance(args.end, datetime.datetime)
-        assert isinstance(args.start, datetime.datetime)
-        assert (args.end - args.start) == datetime.timedelta(days=n_days)
+def test_main_with_args_end_and_days():
+    n_days = 1
+    end = "2026-01-01"
+    expected_end = datetime.datetime(2026, 1, 1, tzinfo=datetime.timezone.utc)
+    expected_start = expected_end - datetime.timedelta(days=n_days)
+    with (
+        patch("arvados_cluster_activity.main.ClusterActivityReport") as m,
+        patch("arvados_cluster_activity.main.get_prometheus_client") as gpc
+    ):
+        gpc.return_value = None
+        aca_main.main(["--days", str(n_days), "--end", end])
+    m.assert_called_once()
+    m.assert_called_with(
+        expected_start, expected_end, prom_client=None, exclude=None
+    )
