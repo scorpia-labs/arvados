@@ -117,9 +117,6 @@ class WorkflowRunCSVRow:
     Cost: str
     CumulativeCost: str
 
-    def asdict(self, **kwargs) -> dict[str, str]:
-        return dataclasses.asdict(self, **kwargs)
-
     @classmethod
     def field_names(cls) -> tuple[str]:
         return tuple(f.name for f in dataclasses.fields(cls))
@@ -216,7 +213,7 @@ class WorkflowRun:
 
     def csv_row(self) -> dict[str, str]:
         started, finished, runtime = self.start_end_runtime()
-        return WorkflowRunCSVRow(
+        return dataclasses.asdict(WorkflowRunCSVRow(
             Project=self.owner_name(),
             ProjectUUID=self.request['owner_uuid'],
             Workflow=self.workflow_name('workflow run from command line'),
@@ -233,7 +230,7 @@ class WorkflowRun:
             Runtime=duration_hms_fmt(runtime),
             Cost=self.container_cost(),
             CumulativeCost=self.cumulative_cost(),
-        ).asdict()
+        ))
 
 
 @dataclasses.dataclass(slots=True)
@@ -872,13 +869,16 @@ class ClusterActivityReport:
 
     def csv_report(self, out, columns, *, include_steps: bool):
         if not columns:
-            columns = ((
-                "Project", "Workflow", "Step",
-                "Sample", "User", "Submitted", "Runtime", "Cost"
-            ) if include_steps else (
-                "Project", "Workflow",
-                "Sample", "User", "Submitted", "Runtime", "CumulativeCost"
-            ))
+            if include_steps:
+                columns = (
+                    "Project", "Workflow", "Step",
+                    "Sample", "User", "Submitted", "Runtime", "Cost"
+                )
+            else:
+                columns = (
+                    "Project", "Workflow",
+                    "Sample", "User", "Submitted", "Runtime", "CumulativeCost"
+                )
 
         csvwriter = csv.DictWriter(out, fieldnames=columns, extrasaction="ignore")
         csvwriter.writeheader()
