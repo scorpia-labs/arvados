@@ -99,6 +99,30 @@ def aws_monthly_cost(value):
 
 
 @dataclasses.dataclass(slots=True)
+class WorkflowRunCSVRow:
+    Project: str
+    ProjectUUID: str
+    Workflow: str
+    WorkflowUUID: str
+    Step: str
+    StepUUID: str
+    Sample: str
+    SampleUUID: str
+    User: str
+    UserUUID: str
+    Submitted: str
+    Started: str
+    Finished: str
+    Runtime: str
+    Cost: str
+    CumulativeCost: str
+
+    @classmethod
+    def field_names(cls) -> tuple[str]:
+        return tuple(f.name for f in dataclasses.fields(cls))
+
+
+@dataclasses.dataclass(slots=True)
 class WorkflowRun:
     """Encapsulate and query a run container
 
@@ -187,26 +211,26 @@ class WorkflowRun:
         else:
             return self.template_uuid(default)
 
-    def csv_row(self):
+    def csv_row(self) -> dict[str, str]:
         started, finished, runtime = self.start_end_runtime()
-        return {
-            'Project': self.owner_name(),
-            'ProjectUUID': self.request['owner_uuid'],
-            'Workflow': self.workflow_name('workflow run from command line'),
-            'WorkflowUUID': self.template_uuid('none'),
-            'Step': self.step_name(),
-            'StepUUID': self.request['uuid'],
-            'Sample': self.request['name'],
-            'SampleUUID': self.request['uuid'],
-            'User': self.user_name(),
-            'UserUUID': self.request['modified_by_user_uuid'],
-            'Submitted': datetime_fmt(self.created_at()),
-            'Started': datetime_fmt(started),
-            'Finished': datetime_fmt(finished),
-            'Runtime': duration_hms_fmt(runtime),
-            'Cost': self.container_cost(),
-            'CumulativeCost': self.cumulative_cost(),
-        }
+        return dataclasses.asdict(WorkflowRunCSVRow(
+            Project=self.owner_name(),
+            ProjectUUID=self.request['owner_uuid'],
+            Workflow=self.workflow_name('workflow run from command line'),
+            WorkflowUUID=self.template_uuid('none'),
+            Step=self.step_name(),
+            StepUUID=self.request['uuid'],
+            Sample=self.request['name'],
+            SampleUUID=self.request['uuid'],
+            User=self.user_name(),
+            UserUUID=self.request['modified_by_user_uuid'],
+            Submitted=datetime_fmt(self.created_at()),
+            Started=datetime_fmt(started),
+            Finished=datetime_fmt(finished),
+            Runtime=duration_hms_fmt(runtime),
+            Cost=self.container_cost(),
+            CumulativeCost=self.cumulative_cost(),
+        ))
 
 
 @dataclasses.dataclass(slots=True)
@@ -844,12 +868,17 @@ class ClusterActivityReport:
         ).html()
 
     def csv_report(self, out, columns, *, include_steps: bool):
-        if columns:
-            columns = columns.split(",")
-        elif include_steps:
-            columns = ("Project", "Workflow", "Step", "Sample", "User", "Submitted", "Runtime", "Cost")
-        else:
-            columns = ("Project", "Workflow", "Sample", "User", "Submitted", "Runtime", "CumulativeCost")
+        if not columns:
+            if include_steps:
+                columns = (
+                    "Project", "Workflow", "Step",
+                    "Sample", "User", "Submitted", "Runtime", "Cost"
+                )
+            else:
+                columns = (
+                    "Project", "Workflow",
+                    "Sample", "User", "Submitted", "Runtime", "CumulativeCost"
+                )
 
         csvwriter = csv.DictWriter(out, fieldnames=columns, extrasaction="ignore")
         csvwriter.writeheader()
