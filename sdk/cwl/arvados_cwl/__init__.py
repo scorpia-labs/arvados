@@ -22,6 +22,7 @@ import cwltool.process
 import cwltool.argparser
 from cwltool.errors import WorkflowException
 from cwltool.process import shortname, UnsupportedRequirement, use_custom_schema
+from cwltool.update import INTERNAL_VERSION
 from cwltool.utils import adjustFileObjs, adjustDirObjs, get_listing
 
 import arvados
@@ -298,6 +299,11 @@ def add_arv_hints():
     for s in supported_versions:
         customschema = importlib.resources.read_text(__name__, f'arv-cwl-schema-{s}.yml', encoding='utf-8')
         use_custom_schema(s, "http://arvados.org/cwl", customschema)
+
+    if INTERNAL_VERSION > supported_versions[-1]:
+        customschema = importlib.resources.read_text(__name__, f'arv-cwl-schema-{supported_versions[-1]}.yml', encoding='utf-8')
+        use_custom_schema(INTERNAL_VERSION, "http://arvados.org/cwl", customschema)
+
     cwltool.process.supportedProcessRequirements.extend([
         "http://arvados.org/cwl#RunInSingleContainer",
         "http://arvados.org/cwl#OutputDirType",
