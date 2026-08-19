@@ -80,6 +80,41 @@ export const readOnlyCollectionFileItemActionSet: ContextMenuActionSet = [
     ],
 ];
 
+export const trashedCollectionDirectoryItemActionSet: ContextMenuActionSet = [
+    [
+        {
+            component: CollectionFileViewerAction,
+            name: ContextMenuActionNames.OPEN_IN_NEW_TAB,
+            execute: () => {
+                return;
+            },
+        },
+        {
+            component: CollectionUUIDCopyToClipboardAction,
+            name: ContextMenuActionNames.COPY_UUID_LINK_TO_CLIPBOARD,
+            execute: () => {
+                return;
+            },
+        },
+        {
+            component: CollectionPDHCopyToClipboardAction,
+            name: ContextMenuActionNames.COPY_PDH_LINK_TO_CLIPBOARD,
+            execute: () => {
+                return;
+            },
+        },
+        {
+            component: CollectionCWLCopyToClipboardAction,
+            name: ContextMenuActionNames.COPY_CWL_LINK_TO_CLIPBOARD,
+            execute: () => {
+                return;
+            },
+        },
+    ],
+];
+
+export const trashedCollectionFileItemActionSet: ContextMenuActionSet = trashedCollectionDirectoryItemActionSet;
+
 const writableActionSet: ContextMenuActionSet = [
     [
         {

@@ -28,6 +28,7 @@ import {
     frozenActionSet,
     projectActionSet,
     readOnlyProjectActionSet,
+    trashedProjectActionSet,
     writeableProjectActionSet,
     manageableProjectActionSet,
     frozenManageableProjectActionSet,
@@ -39,12 +40,15 @@ import {
     collectionFilesMultipleActionSet,
     readOnlyCollectionFilesActionSet,
     readOnlyCollectionFilesMultipleActionSet,
+    trashedCollectionFilesActionSet,
 } from "views-components/context-menu/action-sets/collection-files-action-set";
 import {
     collectionDirectoryItemActionSet,
     collectionFileItemActionSet,
     readOnlyCollectionDirectoryItemActionSet,
     readOnlyCollectionFileItemActionSet,
+    trashedCollectionDirectoryItemActionSet,
+    trashedCollectionFileItemActionSet,
 } from "views-components/context-menu/action-sets/collection-files-item-action-set";
 import { collectionFilesNotSelectedActionSet } from "views-components/context-menu/action-sets/collection-files-not-selected-action-set";
 import {
@@ -93,7 +97,7 @@ import {
     projectAdminActionSet,
 } from "views-components/context-menu/action-sets/project-admin-action-set";
 import { permissionEditActionSet } from "views-components/context-menu/action-sets/permission-edit-action-set";
-import { workflowActionSet, readOnlyWorkflowActionSet } from "views-components/context-menu/action-sets/workflow-action-set";
+import { workflowActionSet, readOnlyWorkflowActionSet, trashedWorkflowActionSet } from "views-components/context-menu/action-sets/workflow-action-set";
 import { storeRedirects } from "./common/redirect-to";
 import { searchResultsActionSet } from "views-components/context-menu/action-sets/search-results-action-set";
 import { externalCredentialActionSet } from "views-components/context-menu/action-sets/external-credential-action-set";
@@ -130,6 +134,12 @@ addMenuActionSet(ContextMenuKind.COLLECTION, collectionActionSet);
 addMenuActionSet(ContextMenuKind.READONLY_COLLECTION, readOnlyCollectionActionSet);
 addMenuActionSet(ContextMenuKind.OLD_VERSION_COLLECTION, oldCollectionVersionActionSet);
 addMenuActionSet(ContextMenuKind.TRASHED_COLLECTION, trashedCollectionActionSet);
+addMenuActionSet(ContextMenuKind.TRASHED_PROJECT, trashedProjectActionSet);
+addMenuActionSet(ContextMenuKind.TRASHED_WORKFLOW, trashedWorkflowActionSet);
+addMenuActionSet(ContextMenuKind.TRASHED_COLLECTION_DIRECTORY_ITEM, trashedCollectionDirectoryItemActionSet);
+addMenuActionSet(ContextMenuKind.TRASHED_COLLECTION_FILE_ITEM, trashedCollectionFileItemActionSet);
+addMenuActionSet(ContextMenuKind.TRASHED_COLLECTION_FILES, trashedCollectionFilesActionSet);
+addMenuActionSet(ContextMenuKind.TRASHED_COLLECTION_FILES_MULTIPLE, trashedCollectionFilesActionSet);
 addMenuActionSet(ContextMenuKind.PROCESS_RESOURCE, processResourceActionSet);
 addMenuActionSet(ContextMenuKind.RUNNING_PROCESS_RESOURCE, runningProcessResourceActionSet);
 addMenuActionSet(ContextMenuKind.READONLY_PROCESS_RESOURCE, readOnlyProcessResourceActionSet);

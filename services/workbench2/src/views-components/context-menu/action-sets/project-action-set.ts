@@ -137,6 +137,10 @@ export const readOnlyProjectActionSet: ContextMenuActionSet = [
     [toggleFavoriteAction, openInNewTabMenuAction, copyToClipboardMenuAction, copyUuidAction, viewDetailsAction, advancedAction, openWith3rdPartyClientAction],
 ];
 
+export const trashedProjectActionSet: ContextMenuActionSet = [
+    [openInNewTabMenuAction, copyToClipboardMenuAction, copyUuidAction, viewDetailsAction, advancedAction, toggleTrashAction],
+];
+
 export const filterGroupActionSet: ContextMenuActionSet = [
     [
         toggleFavoriteAction,

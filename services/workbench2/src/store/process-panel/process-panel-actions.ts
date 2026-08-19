@@ -60,7 +60,8 @@ export const loadProcess =
                     filters: new FilterBuilder().addIsA('uuid', 'arvados#containerRequest')
                                                  .addEqual('uuid', containerRequestUuid)
                                                  .getFilters(),
-                    include: ["container_uuid"]
+                    include: ["container_uuid"],
+                    includeTrash: true
             });
             if (containerRequestResult.items.length === 1) {
                 containerRequest = containerRequestResult.items[0] as ContainerRequestResource;

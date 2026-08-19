@@ -630,12 +630,15 @@ export const loadRegisteredWorkflow = (uuid: string) =>
                     workflow = theworkflow as WorkflowResource;
                     breadcrumbfunc = setSharedWithMeBreadcrumbs;
                 },
-                TRASHED: () => { },
+                TRASHED: async theworkflow => {
+                    workflow = theworkflow as WorkflowResource;
+                    breadcrumbfunc = () => setTrashBreadcrumbs("");
+                },
             });
             if (workflow && breadcrumbfunc) {
                 dispatch(updateResources([workflow]));
                 await dispatch<any>(finishLoadingProject(workflow.ownerUuid));
-                await dispatch<any>(activateSidePanelTreeItem(workflow.ownerUuid));
+                await dispatch<any>(activateSidePanelTreeItem(workflow.isTrashed ? SidePanelTreeCategory.TRASH : workflow.ownerUuid));
                 dispatch<any>(breadcrumbfunc(workflow.ownerUuid));
                 dispatch(workflowProcessesPanelActions.REQUEST_ITEMS());
             }
@@ -842,7 +845,7 @@ const loadGroupContentsResource = async (params: { uuid: string; userUuid: strin
     let handler: GroupContentsHandler;
     if (resource) {
         handler =
-            (resource.kind === ResourceKind.COLLECTION || resource.kind === ResourceKind.PROJECT) && resource.isTrashed
+            (resource as any).isTrashed
                 ? groupContentsHandlers.TRASHED(resource)
                 : groupContentsHandlers.OWNED(resource);
     } else {
@@ -859,7 +862,7 @@ const loadGroupContentsResource = async (params: { uuid: string; userUuid: strin
         } else {
             throw new Error("loadGroupContentsResource unsupported kind " + kind);
         }
-        handler = groupContentsHandlers.SHARED(resource);
+        handler = (resource as any).isTrashed ? groupContentsHandlers.TRASHED(resource) : groupContentsHandlers.SHARED(resource);
     }
     return (cases: MatchCases<typeof groupContentsHandlersRecord, GroupContentsHandler, void>) => groupContentsHandlers.match(handler, cases);
 };

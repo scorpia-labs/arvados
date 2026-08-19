@@ -9,6 +9,8 @@ import { copyToClipboardAction, openInNewTabAction } from "store/open-in-new-tab
 import { openDetailsPanel } from "store/details-panel/details-panel-action";
 import { openAdvancedTabDialog } from "store/advanced-tab/advanced-tab";
 import { copyStringToClipboardAction } from "store/open-in-new-tab/open-in-new-tab.actions";
+import { ToggleTrashAction } from "views-components/context-menu/actions/trash-action";
+import { toggleResourceTrashed } from "store/trash/trash-actions";
 
 export const readOnlyWorkflowActionSet: ContextMenuActionSet = [
     [
@@ -52,6 +54,54 @@ export const readOnlyWorkflowActionSet: ContextMenuActionSet = [
             name: ContextMenuActionNames.COPY_UUID,
             execute: (dispatch, resources) => {
                 dispatch<any>(copyStringToClipboardAction(resources[0].uuid));
+            },
+        },
+    ],
+];
+
+export const trashedWorkflowActionSet: ContextMenuActionSet = [
+    [
+        {
+            icon: OpenIcon,
+            name: ContextMenuActionNames.OPEN_IN_NEW_TAB,
+            execute: (dispatch, resources) => {
+                dispatch<any>(openInNewTabAction(resources[0]));
+            },
+        },
+        {
+            icon: Link,
+            name: ContextMenuActionNames.COPY_LINK_TO_CLIPBOARD,
+            execute: (dispatch, resources) => {
+                dispatch<any>(copyToClipboardAction(resources));
+            },
+        },
+        {
+            icon: DetailsIcon,
+            name: ContextMenuActionNames.VIEW_DETAILS,
+            execute: (dispatch, resources) => {
+                dispatch<any>(openDetailsPanel(resources[0].uuid));
+            },
+        },
+        {
+            icon: AdvancedIcon,
+            name: ContextMenuActionNames.API_DETAILS,
+            execute: (dispatch, resources) => {
+                dispatch<any>(openAdvancedTabDialog(resources[0].uuid));
+            },
+        },
+        {
+            icon: CopyIcon,
+            name: ContextMenuActionNames.COPY_UUID,
+            execute: (dispatch, resources) => {
+                dispatch<any>(copyStringToClipboardAction(resources[0].uuid));
+            },
+        },
+        {
+            component: ToggleTrashAction,
+            name: ContextMenuActionNames.MOVE_TO_TRASH,
+            isForMulti: true,
+            execute: (dispatch, resources) => {
+                dispatch<any>(toggleResourceTrashed(resources.map(res => res.uuid), resources.some(res => res.isTrashed)));
             },
         },
     ],

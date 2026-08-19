@@ -79,6 +79,9 @@ export const resourceToMenuKind = (uuid: string, readonly = false) =>
             return ContextMenuKind.GROUPS
         }
         if (isGroupResource(resource)) {
+            if (resource.isTrashed) {
+                return ContextMenuKind.TRASHED_PROJECT;
+            }
             const { canManage = false, canWrite = false } = resource;
             const unfreezeRequiresAdmin = getUnfreezeRequiresAdmin(auth);
             const isFilterGroup = resource.groupClass === GroupClass.FILTER;
@@ -103,6 +106,9 @@ export const resourceToMenuKind = (uuid: string, readonly = false) =>
                 if (isGroupMemberLink(resource)) return ContextMenuKind.GROUP_MEMBER;
                 return ContextMenuKind.LINK;
             case ResourceKind.WORKFLOW:
+                if ((resource as any).isTrashed) {
+                    return ContextMenuKind.TRASHED_WORKFLOW;
+                }
                 return isEditable ? ContextMenuKind.WORKFLOW : ContextMenuKind.READONLY_WORKFLOW;
             case ResourceKind.EXTERNAL_CREDENTIAL:
                 return ContextMenuKind.EXTERNAL_CREDENTIAL;
@@ -145,12 +151,12 @@ const getProjectMenuKind = ({ isAdmin, readonly, isFrozen, canManage, canWrite, 
 };
 
 const getCollectionMenuKind = ({ isAdmin, isEditable, isOnlyWriteable, isOldVersion, isTrashed }: CollectionToMenuArgs): CollectionMenuKind => {
-    if (isOldVersion) {
-        return ContextMenuKind.OLD_VERSION_COLLECTION;
+    if (isTrashed) {
+        return ContextMenuKind.TRASHED_COLLECTION;
     }
 
-    if (isTrashed && isEditable) {
-        return ContextMenuKind.TRASHED_COLLECTION;
+    if (isOldVersion) {
+        return ContextMenuKind.OLD_VERSION_COLLECTION;
     }
 
     if (isAdmin && isEditable) {

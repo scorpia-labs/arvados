@@ -15,6 +15,7 @@ import { openContextMenuAndSelect, openCollectionFilesContextMenu } from 'store/
 import { openUploadCollectionFilesDialog } from 'store/collections/collection-upload-actions';
 import { ResourceKind } from "models/resource";
 import { openDetailsPanel } from 'store/details-panel/details-panel-action';
+import servicesProvider from "common/service-provider";
 
 const mapStateToProps = (state: RootState): Pick<CollectionPanelFilesProps, "currentItemUuid"> => ({
     currentItemUuid: state.detailsPanel.resourceUuid
@@ -32,16 +33,25 @@ const mapDispatchToProps = (dispatch: Dispatch): Pick<CollectionPanelFilesProps,
     },
     onItemMenuOpen: (event, item, isWritable) => {
         const isDirectory = item.data?.type === 'directory';
+        const isTrashed = servicesProvider.getServices().store?.getState().collectionPanel.item?.isTrashed || false;
+        let menuKind: ContextMenuKind;
+        if (isTrashed) {
+            menuKind = isDirectory
+                ? ContextMenuKind.TRASHED_COLLECTION_DIRECTORY_ITEM
+                : ContextMenuKind.TRASHED_COLLECTION_FILE_ITEM;
+        } else if (isWritable) {
+            menuKind = isDirectory
+                ? ContextMenuKind.COLLECTION_DIRECTORY_ITEM
+                : ContextMenuKind.COLLECTION_FILE_ITEM;
+        } else {
+            menuKind = isDirectory
+                ? ContextMenuKind.READONLY_COLLECTION_DIRECTORY_ITEM
+                : ContextMenuKind.READONLY_COLLECTION_FILE_ITEM;
+        }
         dispatch<any>(openContextMenuAndSelect(
             event,
             {
-                menuKind: isWritable
-                    ? isDirectory
-                        ? ContextMenuKind.COLLECTION_DIRECTORY_ITEM
-                        : ContextMenuKind.COLLECTION_FILE_ITEM
-                    : isDirectory
-                        ? ContextMenuKind.READONLY_COLLECTION_DIRECTORY_ITEM
-                        : ContextMenuKind.READONLY_COLLECTION_FILE_ITEM,
+                menuKind,
                 kind: ResourceKind.COLLECTION,
                 name: item.data?.name || '',
                 uuid: item.id,

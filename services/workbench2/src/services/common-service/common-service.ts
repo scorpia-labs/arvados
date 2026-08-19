@@ -123,6 +123,7 @@ export class CommonService<T> {
 
         const cfg: AxiosRequestConfig = {
             params: {
+                include_trash: true,
                 select: select
                     ? `[${select.map(snakeCase).map(s => `"${s}"`).join(',')}]`
                     : undefined

@@ -53,6 +53,7 @@ describe('collection-service', () => {
             await collectionService.get(uuid);
             cy.get('@get').should('be.calledWith', `/collections/${uuid}`, {
                 params: {
+                    include_trash: true,
                     select: JSON.stringify(defaultCollectionSelectedFields.map(snakeCase)),
                 }
             }); 
@@ -66,6 +67,7 @@ describe('collection-service', () => {
             await collectionService.get(uuid, undefined, ['manifestText']);
             cy.get('@get').should('be.calledWith', `/collections/${uuid}`, {
                 params: {
+                    include_trash: true,
                     select: JSON.stringify(['manifest_text']),
                 }
             });

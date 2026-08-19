@@ -146,7 +146,7 @@ const checkIsWritable = (item: CollectionResource, itemOwner: GroupResource | Us
 
     let isWritable = false;
 
-    if (isCurrentVersion) {
+    if (isCurrentVersion && !item.isTrashed) {
         if (item.ownerUuid === currentUserUUID) {
             isWritable = true;
         } else {

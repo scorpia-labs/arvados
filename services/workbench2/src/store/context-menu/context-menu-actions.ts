@@ -82,6 +82,25 @@ export const openCollectionFilesContextMenu =
     (event: React.MouseEvent<HTMLElement>, isWritable: boolean) => (dispatch: Dispatch, getState: () => RootState) => {
         const selectedCount = filterCollectionFilesBySelection(getState().collectionPanelFiles, true).length;
         const multiple = selectedCount > 1;
+        const isTrashed = getState().collectionPanel.item?.isTrashed || false;
+        let menuKind: ContextMenuKind;
+        if (isTrashed) {
+            menuKind = selectedCount > 0
+                ? multiple
+                    ? ContextMenuKind.TRASHED_COLLECTION_FILES_MULTIPLE
+                    : ContextMenuKind.TRASHED_COLLECTION_FILES
+                : ContextMenuKind.COLLECTION_FILES_NOT_SELECTED;
+        } else {
+            menuKind = selectedCount > 0
+                ? isWritable
+                    ? multiple
+                        ? ContextMenuKind.COLLECTION_FILES_MULTIPLE
+                        : ContextMenuKind.COLLECTION_FILES
+                    : multiple
+                    ? ContextMenuKind.READONLY_COLLECTION_FILES_MULTIPLE
+                    : ContextMenuKind.READONLY_COLLECTION_FILES
+                : ContextMenuKind.COLLECTION_FILES_NOT_SELECTED;
+        }
         dispatch<any>(
             openContextMenuAndSelect(event, {
                 name: "",
@@ -89,16 +108,7 @@ export const openCollectionFilesContextMenu =
                 ownerUuid: "",
                 description: "",
                 kind: ResourceKind.COLLECTION,
-                menuKind:
-                    selectedCount > 0
-                        ? isWritable
-                            ? multiple
-                                ? ContextMenuKind.COLLECTION_FILES_MULTIPLE
-                                : ContextMenuKind.COLLECTION_FILES
-                            : multiple
-                            ? ContextMenuKind.READONLY_COLLECTION_FILES_MULTIPLE
-                            : ContextMenuKind.READONLY_COLLECTION_FILES
-                        : ContextMenuKind.COLLECTION_FILES_NOT_SELECTED,
+                menuKind,
             })
         );
     };

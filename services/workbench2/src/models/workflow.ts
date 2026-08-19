@@ -11,6 +11,7 @@ export interface WorkflowResource extends Resource {
     name: string;
     description: string | null;
     definition: string;
+    isTrashed?: boolean;
 }
 export interface WorkflowResourceDefinition {
     cwlVersion: string;

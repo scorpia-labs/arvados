@@ -119,7 +119,7 @@ export const CollectionPanel = withStyles(styles)(connect(
             checkIsWritable = (item: CollectionResource, itemOwner: GroupResource | UserResource | null, currentUserUUID: string, isFrozen: boolean): boolean => {
                 let isWritable = false;
 
-                if (item && !this.state.isOldVersion) {
+                if (item && !this.state.isOldVersion && !item.isTrashed) {
                     if (item.ownerUuid === currentUserUUID) {
                         isWritable = true;
                     } else {

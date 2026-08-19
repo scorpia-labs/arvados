@@ -114,6 +114,10 @@ export const readOnlyCollectionFilesMultipleActionSet: ContextMenuActionSet = [
     copyActionsMultiple,
 ];
 
+export const trashedCollectionFilesActionSet: ContextMenuActionSet = [
+    selectActions,
+];
+
 export const collectionFilesActionSet: ContextMenuActionSet = readOnlyCollectionFilesActionSet.concat([[
     removeAction,
     ...moveActions,
