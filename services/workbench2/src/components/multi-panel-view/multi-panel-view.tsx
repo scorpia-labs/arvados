@@ -11,7 +11,7 @@ import { Grid, Paper, Tabs, Tab } from "@mui/material";
 import { WithStyles } from '@mui/styles';
 import withStyles from '@mui/styles/withStyles';
 import { GridProps } from '@mui/material/Grid';
-import { isArray, isEqual } from 'lodash';
+import { isEqual } from 'lodash';
 import classNames from 'classnames';
 
 type CssRules =
