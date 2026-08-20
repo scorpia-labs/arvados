@@ -134,19 +134,13 @@ const mapStateToProps = (state: RootState): Pick<MPVContainerDataProps, 'router'
 
 // Grid container compatible component that also handles panel toggling.
 const MPVContainerComponent = ({ children, panelStates, classes, router, ...props }: MPVContainerProps & WithStyles<CssRules>) => {
-    if (children === undefined || children === null || Object.keys(children).length === 0) {
-        children = [];
-    } else if (!isArray(children)) {
-        children = [children];
-    } else {
-        children = children.filter(child => child !== null);
-    }
+    const validChildren = React.Children.toArray(children);
 
-    const [initialVisibility, setInitialVisibility] = useState<boolean[]>(getInitialVisibility(panelStates, children as []));
+    const [initialVisibility, setInitialVisibility] = useState<boolean[]>(getInitialVisibility(panelStates, validChildren));
 
     useEffect(() => {
-        setInitialVisibility(getInitialVisibility(panelStates, children as []));
-    }, [(children as []).length]);
+        setInitialVisibility(getInitialVisibility(panelStates, validChildren));
+    }, [validChildren.length]);
 
     const [panelVisibility, setPanelVisibility] = useState<boolean[]>(initialVisibility);
     const currentSelectedPanel = panelVisibility.findIndex(Boolean);
@@ -164,41 +158,39 @@ const MPVContainerComponent = ({ children, panelStates, classes, router, ...prop
     let tabs: JSX.Element[] = [];
     let tabBar: JSX.Element = <></>;
 
-    if (isArray(children)) {
-        const showFn = (idx: number) => () => {
-            // Hide all other panels
-            setPanelVisibility(Array.from({ length: (children as []).length }, (_, index) => index === idx));
-            setSelectedPanel(idx);
-        };
-
-        for (let idx = 0; idx < children.length; idx++) {
-            const panelName = panelStates === undefined
-                ? `Panel ${idx + 1}`
-                : (panelStates[idx] && panelStates[idx].name) || `Panel ${idx + 1}`;
-
-            tabs = [
-                ...tabs,
-                <>{panelName}</>
-            ];
-
-            const aPanel =
-                <MPVHideablePanel
-                    key={idx}
-                    visible={panelVisibility[idx]}
-                    name={panelName}
-                    paperClassName={classes.exclusiveContentPaper}
-                    panelRef={(idx === selectedPanel) ? panelRef : undefined}
-                    >
-                    {children[idx]}
-                </MPVHideablePanel>;
-            panels = [...panels, aPanel];
-        };
-
-        tabBar = (
-            <Tabs className={classes.symmetricTabs} value={currentSelectedPanel} onChange={(e, val) => showFn(val)()} data-cy={"mpv-tabs"}>
-                {tabs.map((tgl, idx) => <Tab className={classNames(classes.tab, idx === selectedPanel ? classes.selectedTab : '')} key={idx} label={tgl} />)}
-            </Tabs>);
+    const showFn = (idx: number) => () => {
+        // Hide all other panels
+        setPanelVisibility(Array.from({ length: validChildren.length }, (_, index) => index === idx));
+        setSelectedPanel(idx);
     };
+
+    for (let idx = 0; idx < validChildren.length; idx++) {
+        const panelName = panelStates === undefined
+            ? `Panel ${idx + 1}`
+            : (panelStates[idx] && panelStates[idx].name) || `Panel ${idx + 1}`;
+
+        tabs = [
+            ...tabs,
+            <>{panelName}</>
+        ];
+
+        const aPanel =
+            <MPVHideablePanel
+                key={idx}
+                visible={panelVisibility[idx]}
+                name={panelName}
+                paperClassName={classes.exclusiveContentPaper}
+                panelRef={(idx === selectedPanel) ? panelRef : undefined}
+                >
+                {validChildren[idx]}
+            </MPVHideablePanel>;
+        panels = [...panels, aPanel];
+    };
+
+    tabBar = (
+        <Tabs className={classes.symmetricTabs} value={currentSelectedPanel} onChange={(e, val) => showFn(val)()} data-cy={"mpv-tabs"}>
+            {tabs.map((tgl, idx) => <Tab className={classNames(classes.tab, idx === selectedPanel ? classes.selectedTab : '')} key={idx} label={tgl} />)}
+        </Tabs>);
 
     const content = <Grid container direction="column" item {...props} xs className={classes.exclusiveContent}>
                         {panelVisibility.includes(true) && panels}

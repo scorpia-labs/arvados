@@ -117,4 +117,25 @@ describe('<MPVContainer />', () => {
         cy.contains('This is one panel').should('not.exist');
         cy.contains('This is another panel');
     });
+
+    it('should ignore false or null children', () => {
+        const childs = [
+            <PanelMock key={1}>This is one panel</PanelMock>,
+            false,
+            null,
+        ];
+        props.panelStates = [
+            {name: 'Overview', visible: true},
+        ];
+        cy.mount(
+            <Provider store={store}>
+                <ThemeProvider theme={CustomTheme}>
+                    <MPVContainer {...props}>{[...childs]}</MPVContainer>
+                </ThemeProvider>
+            </Provider>
+        );
+        cy.get('button').should('have.length', 1);
+        cy.get('button').eq(0).should('contain', 'Overview');
+        cy.contains('This is one panel');
+    });
 });
