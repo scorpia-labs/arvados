@@ -85,7 +85,7 @@ describe('<CollectionPanel />', () => {
         mount(
             <Provider store={store}>
                 <ThemeProvider theme={CustomTheme}>
-                    <CollectionPanel match={match} history={{} as any} location={{} as any} />
+                    <CollectionPanel match={match} history={{}} location={{}} />
                 </ThemeProvider>
             </Provider>
         );
@@ -104,7 +104,7 @@ describe('<CollectionPanel />', () => {
         mount(
             <Provider store={store}>
                 <ThemeProvider theme={CustomTheme}>
-                    <CollectionPanel match={match} history={{} as any} location={{} as any} />
+                    <CollectionPanel match={match} history={{}} location={{}} />
                 </ThemeProvider>
             </Provider>
         );
