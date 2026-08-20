@@ -15,7 +15,6 @@ import { startSubmit, stopSubmit, initialize, FormErrors } from 'redux-form';
 import { getDialog } from "store/dialog/dialog-reducer";
 import { getFileFullPath, sortFilesTree } from "services/collection-service/collection-service-files-response";
 import { CollectionResource } from "models/collection";
-import { loadCollection } from "store/workbench/workbench-actions";
 
 export const collectionPanelFilesAction = unionize({
     SET_COLLECTION_FILES: ofType<CollectionFilesTree>(),
@@ -131,8 +130,9 @@ export const renameFile = (newFullPath: string) =>
                 dispatch(startSubmit(RENAME_FILE_DIALOG));
                 const oldPath = getFileFullPath(file);
                 const newPath = newFullPath;
-                services.collectionService.renameFile(currentCollection.uuid, currentCollection.portableDataHash, oldPath, newPath).then(() => {
+                services.collectionService.renameFile(currentCollection.uuid, currentCollection.portableDataHash, oldPath, newPath).then(async () => {
                     dispatch(snackbarActions.OPEN_SNACKBAR({ message: 'File name changed.', hideDuration: 2000 }));
+                    const { loadCollection } = await import("store/workbench/workbench-actions");
                     dispatch<any>(loadCollection(currentCollection.uuid));
                 }).catch(e => {
                     const errors: FormErrors<RenameFileDialogData, string> = {

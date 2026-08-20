@@ -136,16 +136,19 @@ const mapStateToProps = (state: RootState): Pick<MPVContainerDataProps, 'router'
 const MPVContainerComponent = ({ children, panelStates, classes, router, ...props }: MPVContainerProps & WithStyles<CssRules>) => {
     const validChildren = React.Children.toArray(children);
 
-    const [initialVisibility, setInitialVisibility] = useState<boolean[]>(getInitialVisibility(panelStates, validChildren));
-
-    useEffect(() => {
-        setInitialVisibility(getInitialVisibility(panelStates, validChildren));
-    }, [validChildren.length]);
-
-    const [panelVisibility, setPanelVisibility] = useState<boolean[]>(initialVisibility);
+    const initialVis = getInitialVisibility(panelStates, validChildren);
+    const [initialVisibility, setInitialVisibility] = useState<boolean[]>(initialVis);
+    const [panelVisibility, setPanelVisibility] = useState<boolean[]>(initialVis);
     const currentSelectedPanel = panelVisibility.findIndex(Boolean);
     const [selectedPanel, setSelectedPanel] = useState<number>(-1);
     const panelRef = useRef<any>(null);
+
+    useEffect(() => {
+        const newVis = getInitialVisibility(panelStates, validChildren);
+        setInitialVisibility(newVis);
+        setPanelVisibility(newVis);
+        setSelectedPanel(newVis.indexOf(true));
+    }, [validChildren.length]);
 
     // Reset MPV to initial state when route changes
     const currentRoute = router.location ? router.location.pathname : "";

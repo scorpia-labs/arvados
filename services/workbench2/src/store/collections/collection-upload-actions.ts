@@ -9,14 +9,14 @@ import { dialogActions } from 'store/dialog/dialog-actions';
 import { snackbarActions, SnackbarKind } from 'store/snackbar/snackbar-actions';
 import { fileUploaderActions } from 'store/file-uploader/file-uploader-actions';
 import { progressIndicatorActions } from "store/progress-indicator/progress-indicator-actions";
-import * as WorkbenchActions from 'store/workbench/workbench-actions';
 
 export const uploadCollectionFiles = (collectionUuid: string, targetLocation?: string) =>
     async (dispatch: Dispatch<any>, getState: () => RootState, services: ServiceRepository) => {
         dispatch(fileUploaderActions.START_UPLOAD());
         const files = getState().fileUploader.map(file => file.file);
         await services.collectionService.uploadFiles(collectionUuid, files, handleUploadProgress(dispatch), targetLocation);
-        dispatch(WorkbenchActions.loadCollection(collectionUuid));
+        const { loadCollection } = await import('store/workbench/workbench-actions');
+        dispatch<any>(loadCollection(collectionUuid));
         dispatch(fileUploaderActions.CLEAR_UPLOAD());
     };
 
