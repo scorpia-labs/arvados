@@ -86,6 +86,7 @@ export const CollectionPanel = withStyles(styles)(connect(
                     return this.props.match.params.id !== nextProps.match.params.id
                         || this.props.resources !== nextProps.resources
                         || this.state.isWritable !== nextState.isWritable
+                        || this.state.item !== nextState.item;
             }
 
             componentDidUpdate( prevProps: Readonly<CollectionPanelProps>, prevState: Readonly<CollectionPanelState>, snapshot?: any ): void {
@@ -137,11 +138,14 @@ export const CollectionPanel = withStyles(styles)(connect(
             render() {
                 const { classes } = this.props;
                 const { isWritable, item } = this.state;
+                const isTrashed = item?.isTrashed;
                 // Set up panels and default tab
-                const panelsData: MPVPanelState[] = [
-                    { name: "Overview" },
-                    { name: "Files", visible: true },
-                ];
+                const panelsData: MPVPanelState[] = isTrashed
+                    ? [{ name: "Overview", visible: true }]
+                    : [
+                        { name: "Overview" },
+                        { name: "Files", visible: true },
+                    ];
                 return item
                     ? <section className={classes.root}>
                         <DetailsCardRoot />
@@ -149,11 +153,13 @@ export const CollectionPanel = withStyles(styles)(connect(
                             <MPVPanelContent item xs>
                                 <OverviewPanel detailsElement={<CollectionAttributes />} />
                             </MPVPanelContent>
-                            <MPVPanelContent item xs>
-                                <section className={classes.filesCard}>
-                                    <CollectionPanelFiles isWritable={isWritable} />
-                                </section>
-                            </MPVPanelContent>
+                            {!isTrashed && (
+                                <MPVPanelContent item xs>
+                                    <section className={classes.filesCard}>
+                                        <CollectionPanelFiles isWritable={isWritable} />
+                                    </section>
+                                </MPVPanelContent>
+                            )}
                         </MPVContainer >
                     </section>
                     : <NotFoundView
