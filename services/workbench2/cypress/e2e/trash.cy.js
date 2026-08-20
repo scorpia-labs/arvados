@@ -97,6 +97,13 @@ describe('Trash tests', function () {
                 cy.assertDataExplorerContains(testCollection.name, false);
                 cy.assertBreadcrumbs(["Home Projects"]);
 
+                // Navigate directly to trashed collection view and verify Files tab is absent
+                cy.visit(`/collections/${testCollection.uuid}`);
+                cy.get('[data-cy="mpv-tabs"]').within(() => {
+                    cy.contains('Overview').should('exist');
+                    cy.contains('Files').should('not.exist');
+                });
+
                 // Restore with context menu
                 cy.get('[data-cy=side-panel-tree]').contains('Trash').click();
                 cy.assertBreadcrumbs(["Trash"]);
