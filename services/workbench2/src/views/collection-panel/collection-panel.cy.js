@@ -3,13 +3,15 @@
 // SPDX-License-Identifier: AGPL-3.0
 
 import React from 'react';
-import { CollectionPanel } from './collection-panel';
 import { mount } from 'cypress/react';
 import { Provider } from 'react-redux';
 import { createStore, combineReducers } from 'redux';
 import { ThemeProvider } from '@mui/material';
 import { CustomTheme } from 'common/custom-theme';
 import { ResourceKind } from 'models/resource';
+
+// Import CollectionPanel
+import { CollectionPanel } from './collection-panel';
 
 describe('<CollectionPanel />', () => {
     let store;
@@ -35,6 +37,9 @@ describe('<CollectionPanel />', () => {
             collectionPanelFiles: {},
             detailsCard: {},
             properties: {},
+            detailsPanel: {
+                resourceUuid: collection.uuid,
+            },
         };
 
         return createStore(combineReducers({
@@ -45,6 +50,7 @@ describe('<CollectionPanel />', () => {
             collectionPanelFiles: (state = initialState.collectionPanelFiles) => state,
             detailsCard: (state = initialState.detailsCard) => state,
             properties: (state = initialState.properties) => state,
+            detailsPanel: (state = initialState.detailsPanel) => state,
         }));
     };
 
