@@ -1407,6 +1407,7 @@ describe("Collection panel tests", function () {
                 let filesRequestCalled = false;
                 cy.intercept('PROPFIND', `**/c=${testCollection1.uuid}/**`, (req) => {
                     filesRequestCalled = true;
+                    req.continue();
                 }).as('filesRequest');
 
                 // Move collection to trash
