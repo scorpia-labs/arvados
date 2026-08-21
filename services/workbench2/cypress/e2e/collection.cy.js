@@ -1400,34 +1400,49 @@ describe("Collection panel tests", function () {
         });
 
         it('shows Overview tab as default, disables Files tab, and prevents file requests for a trashed collection', () => {
-            cy.getAll("@testCollection1").then(function ([testCollection1]) {
-                cy.loginAs(activeUser);
+            const trashedCollectionName = `Trashed Tab Test Collection ${Math.floor(Math.random() * 999999)}`;
+            cy.loginAs(activeUser);
+            cy.goToPath(`/projects/${activeUser.user.uuid}`);
+
+            // Create a collection
+            cy.get("[data-cy=side-panel-button]").click();
+            cy.get("[data-cy=side-panel-new-collection]").click();
+            cy.get("[data-cy=form-dialog]").within(() => {
+                cy.get("[data-cy=name-field] input").type(trashedCollectionName);
+                cy.get("[data-cy=form-submit-btn]").click();
+            });
+            cy.get("[data-cy=form-dialog]").should("not.exist");
+
+            // Go back to the project to trash it
+            cy.doSidePanelNavigation("Home Projects");
+
+            // Get the UUID of the newly created collection before trashing
+            cy.get('[data-cy=data-table-row]').contains(trashedCollectionName).should('exist')
+            .parents('tr').invoke('attr', 'data-item-id').then((uuid) => {
 
                 // Stub the files request to track if it is called
                 let filesRequestCalled = false;
-                cy.intercept('PROPFIND', `**/c=${testCollection1.uuid}/**`, (req) => {
+                cy.intercept('PROPFIND', `**/c=${uuid}/**`, (req) => {
                     filesRequestCalled = true;
                     req.continue();
                 }).as('filesRequest');
 
                 // Move collection to trash
-                cy.goToPath(`/projects/${activeUser.user.uuid}`);
-                cy.get('[data-cy=data-table-row]').contains(testCollection1.name).should('exist').rightclick();
-                cy.get('[data-cy=context-menu]').should('exist');
+                cy.get('[data-cy=data-table-row]').contains(trashedCollectionName).rightclick();
                 cy.get('[data-cy=context-move-to-trash]').click();
                 cy.waitForDom();
 
-                // Navigate to the trashed collection
-                cy.goToPath(`/collections/${testCollection1.uuid}`);
+                // Navigate to the trashed collection via the Trash panel
+                cy.doSidePanelNavigation('Trash');
+                cy.doDataExplorerSearch(trashedCollectionName);
+                cy.doDataExplorerNavigate(trashedCollectionName);
 
                 // Verify "Overview" is the default active tab
                 cy.get('[data-cy=mpv-tabs] .Mui-selected').should('contain', 'Overview');
 
                 // Verify "Files" tab is disabled and shows the appropriate tooltip
                 cy.get('[data-cy=mpv-tabs] button[disabled]').should('contain', 'Files');
-                // The tooltip content is within a title attribute on the span inside the tab or handled by MUI Tooltip
                 cy.get('[data-cy=mpv-tabs] button[disabled]').trigger('mouseover', { force: true });
-                // We just verify it is disabled, which confirms the state change
 
                 // Confirm no network request was made for files
                 cy.then(() => {
