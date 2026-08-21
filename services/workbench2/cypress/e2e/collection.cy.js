@@ -1448,6 +1448,27 @@ describe("Collection panel tests", function () {
                 cy.then(() => {
                     expect(filesRequestCalled).to.be.false;
                 });
+
+                // Navigate back to the trash to restore the collection
+                cy.doSidePanelNavigation('Trash');
+                cy.doDataExplorerSearch(trashedCollectionName);
+                cy.doDataExplorerContextAction(trashedCollectionName, 'Restore');
+                cy.waitForDom();
+
+                // Navigate back to the project to view the restored collection
+                cy.doSidePanelNavigation("Home Projects");
+                cy.doDataExplorerSearch(trashedCollectionName);
+                cy.doDataExplorerNavigate(trashedCollectionName);
+
+                // Verify "Overview" is still the default active tab
+                cy.get('[data-cy=mpv-tabs] .Mui-selected').should('contain', 'Overview');
+
+                // Verify "Files" tab is now enabled and clickable
+                cy.get('[data-cy=mpv-tabs] button').contains('Files').should('not.have.attr', 'disabled');
+                cy.doMPVTabSelect('Files');
+
+                // Ensure the files panel loads successfully
+                cy.get('[data-cy=collection-files-panel]').should('exist');
             });
         });
 
