@@ -1399,6 +1399,42 @@ describe("Collection panel tests", function () {
             });
         });
 
+        it('shows Overview tab as default, disables Files tab, and prevents file requests for a trashed collection', () => {
+            cy.getAll("@testCollection1").then(function ([testCollection1]) {
+                cy.loginAs(activeUser);
+
+                // Stub the files request to track if it is called
+                let filesRequestCalled = false;
+                cy.intercept('PROPFIND', `**/c=${testCollection1.uuid}/**`, (req) => {
+                    filesRequestCalled = true;
+                }).as('filesRequest');
+
+                // Move collection to trash
+                cy.goToPath(`/projects/${activeUser.user.uuid}`);
+                cy.get('[data-cy=data-table-row]').contains(testCollection1.name).should('exist').rightclick();
+                cy.get('[data-cy=context-menu]').should('exist');
+                cy.get('[data-cy=context-move-to-trash]').click();
+                cy.waitForDom();
+
+                // Navigate to the trashed collection
+                cy.goToPath(`/collections/${testCollection1.uuid}`);
+
+                // Verify "Overview" is the default active tab
+                cy.get('[data-cy=mpv-tabs] .Mui-selected').should('contain', 'Overview');
+
+                // Verify "Files" tab is disabled and shows the appropriate tooltip
+                cy.get('[data-cy=mpv-tabs] button[disabled]').should('contain', 'Files');
+                // The tooltip content is within a title attribute on the span inside the tab or handled by MUI Tooltip
+                cy.get('[data-cy=mpv-tabs] button[disabled]').trigger('mouseover', { force: true });
+                // We just verify it is disabled, which confirms the state change
+
+                // Confirm no network request was made for files
+                cy.then(() => {
+                    expect(filesRequestCalled).to.be.false;
+                });
+            });
+        });
+
         it('displays the correct breadcrumbs after moving a collection to trash', () => {
             const breadcrumbTestCollectionName = `Breadcrumb Test Collection ${Math.floor(Math.random() * 999999)}`;
             cy.loginAs(activeUser);

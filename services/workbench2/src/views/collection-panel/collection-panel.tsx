@@ -138,7 +138,10 @@ export const CollectionPanel = withStyles(styles)(connect(
                 const { classes } = this.props;
                 const { isWritable, item } = this.state;
                 // Set up panels and default tab
-                const panelsData: MPVPanelState[] = [
+                const panelsData: MPVPanelState[] = item?.isTrashed ? [
+                    { name: "Overview", visible: true },
+                    { name: "Files", disabled: true, disabledInfo: "File content of a trashed collection is not displayed" },
+                ] : [
                     { name: "Overview" },
                     { name: "Files", visible: true },
                 ];
