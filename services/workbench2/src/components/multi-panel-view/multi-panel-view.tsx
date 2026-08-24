@@ -182,7 +182,7 @@ const MPVContainerComponent = ({ children, panelStates, classes, router, ...prop
             let tabLabel: React.ReactNode = panelName;
             if (disabled && disabledInfo) {
                 tabLabel = (
-                    <Tooltip title={disabledInfo}>
+                    <Tooltip title={disabledInfo} data-cy={`disabled-tab-${idx}-tooltip`}>
                         <span style={{ pointerEvents: 'auto' }}>
                             {panelName}
                         </span>
