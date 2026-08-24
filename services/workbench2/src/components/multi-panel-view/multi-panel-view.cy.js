@@ -114,15 +114,19 @@ describe('<MPVContainer />', () => {
             </Provider>
         );
         // Verify "First Panel" is active and not disabled
-        cy.get('button').eq(0).should('contain', 'First Panel').should('not.have.attr', 'disabled');
+        cy.get('button').eq(0).should('contain', 'First Panel').and('not.have.attr', 'disabled');
 
-        // Verify "Second Panel" is disabled, wrapped in tooltip span, and has correct styling
-        cy.get('button').eq(1).should('contain', 'Second Panel').should('have.attr', 'disabled');
-        cy.get('span[data-cy="disabled-tab-1-tooltip"]').should('have.css', 'flex-grow', '1');
-        cy.get('span[data-cy="disabled-tab-1-tooltip"]').should('have.css', 'display', 'flex');
+        // Verify "Second Panel" is disabled and has correct styling
+        cy.get('button').eq(1).should('contain', 'Second Panel').and('have.attr', 'disabled');
+        cy.get('button').eq(1).parents('span').eq(0)
+            .should('have.css', 'flex-grow', '1')
+            .and('have.css', 'display', 'flex');
 
         // Hover over the tooltip to verify it appears
-        cy.get('span[data-cy="disabled-tab-1-tooltip"]').trigger('mouseover', { force: true });
+        cy.get('button').eq(1).trigger('mouseover', { force: true });
+        cy.get('#disabled-tab-1-tooltip')
+            .should('be.visible')
+            .and('contain.text', 'Disabled reason');
     });
 
     it('should set initial panel visibility according to panelStates prop', () => {

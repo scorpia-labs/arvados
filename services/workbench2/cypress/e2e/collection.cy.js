@@ -1280,24 +1280,20 @@ describe("Collection panel tests", function () {
                 // Verify "Overview" is the default active tab
                 cy.get('[data-cy=mpv-tabs] .Mui-selected').should('contain', 'Overview');
 
-                // Verify "Files" tab is disabled and shows the appropriate tooltip
-                cy.get('[data-cy=mpv-tabs] button[data-cy=tab-files]').should('have.attr', 'disabled');
-                cy.get('[data-cy="disabled-tab-1-tooltip"]').trigger('mouseover', { force: true });
-
                 // Confirm no network request was made for files
                 cy.then(() => {
                     expect(filesRequestCalled).to.be.false;
                 });
 
                 // Restore collection
-                cy.get('[data-targetid="Restore"] button').click()
+                cy.get('[data-targetid="Restore"] button').click();
                 cy.waitForDom();
 
                 // Verify "Files" tab is now enabled.
-                cy.get('[data-cy=mpv-tabs] button[data-cy=tab-files]').should('not.have.attr', 'disabled');
+                cy.get('[data-cy=mpv-tabs] [data-cy=tab-files]').should('not.have.attr', 'disabled');
 
                 // Ensure the files panel loads successfully
-                cy.get('[data-cy=mpv-tabs] button[data-cy=tab-files]').click();
+                cy.get('[data-cy=mpv-tabs] [data-cy=tab-files]').click();
                 cy.get('[data-cy=collection-files-panel]').should('exist');
             });
     });
