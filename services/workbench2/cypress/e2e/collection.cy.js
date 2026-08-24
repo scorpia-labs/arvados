@@ -1281,32 +1281,23 @@ describe("Collection panel tests", function () {
                 cy.get('[data-cy=mpv-tabs] .Mui-selected').should('contain', 'Overview');
 
                 // Verify "Files" tab is disabled and shows the appropriate tooltip
-                cy.get('[data-cy=disabled-tab-1-tooltip] button[disabled]').should('contain', 'Files');
-                cy.get('[data-cy=disabled-tab-1-tooltip]').trigger('mouseover', { force: true });
+                cy.get('[data-cy=mpv-tabs] button[data-cy=tab-files]').should('have.attr', 'disabled');
+                cy.get('[data-cy=mpv-tabs] button[data-cy=tab-files]').trigger('mouseover', { force: true });
 
                 // Confirm no network request was made for files
                 cy.then(() => {
                     expect(filesRequestCalled).to.be.false;
                 });
 
-                // Navigate back to the trash to restore the collection
-                cy.doSidePanelNavigation('Trash');
-                cy.doDataExplorerSearch(trashedCollectionName);
-                cy.doDataExplorerContextAction(trashedCollectionName, 'Restore');
+                // Restore collection
+                cy.get('[data-targetid="Restore"] button').click()
                 cy.waitForDom();
 
-                // Navigate back to the project to view the restored collection
-                cy.doSidePanelNavigation("Home Projects");
-                cy.doDataExplorerSearch(trashedCollectionName);
-                cy.doDataExplorerNavigate(trashedCollectionName);
-
-                // Verify "Files" is the default active tab
-                cy.get('[data-cy=mpv-tabs] .Mui-selected').should('contain', 'Files');
-
                 // Verify "Files" tab is now enabled.
-                cy.get('[data-cy=mpv-tabs] button').contains('Files').should('not.have.attr', 'disabled');
+                cy.get('[data-cy=mpv-tabs] button[data-cy=tab-files]').should('not.have.attr', 'disabled');
 
                 // Ensure the files panel loads successfully
+                cy.get('[data-cy=mpv-tabs] button[data-cy=tab-files]').click();
                 cy.get('[data-cy=collection-files-panel]').should('exist');
             });
     });

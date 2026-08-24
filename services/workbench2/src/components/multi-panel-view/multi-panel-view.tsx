@@ -184,6 +184,7 @@ const MPVContainerComponent = ({ children, panelStates, classes, router, ...prop
                 className={classNames(classes.tab, idx === selectedPanel ? classes.selectedTab : '')}
                 key={idx}
                 label={panelName}
+                data-cy={`tab-${panelName.toLowerCase()}`}
             />;
 
             tabs = [
