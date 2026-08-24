@@ -190,7 +190,7 @@ const MPVContainerComponent = ({ children, panelStates, classes, router, ...prop
                 ...tabs,
                 (disabled && disabledInfo) ? (
                     <Tooltip title={disabledInfo} data-cy={`disabled-tab-${idx}-tooltip`} key={idx}>
-                        <span style={{ pointerEvents: 'auto' }}>
+                        <span style={{ pointerEvents: 'auto', flexGrow: 1, display: 'flex' }}>
                             {tab}
                         </span>
                     </Tooltip>
