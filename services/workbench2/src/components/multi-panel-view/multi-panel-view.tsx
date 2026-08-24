@@ -179,25 +179,24 @@ const MPVContainerComponent = ({ children, panelStates, classes, router, ...prop
             const disabled = panelState?.disabled || false;
             const disabledInfo = panelState?.disabledInfo;
 
-            let tabLabel: React.ReactNode = panelName;
-            if (disabled && disabledInfo) {
-                tabLabel = (
-                    <Tooltip title={disabledInfo} data-cy={`disabled-tab-${idx}-tooltip`}>
-                        <span style={{ pointerEvents: 'auto' }}>
-                            {panelName}
-                        </span>
-                    </Tooltip>
-                );
-            }
+            const tab = <Tab
+                disabled={disabled}
+                className={classNames(classes.tab, idx === selectedPanel ? classes.selectedTab : '')}
+                key={idx}
+                label={panelName}
+            />;
 
             tabs = [
                 ...tabs,
-                <Tab
-                    disabled={disabled}
-                    className={classNames(classes.tab, idx === selectedPanel ? classes.selectedTab : '')}
-                    key={idx}
-                    label={tabLabel}
-                />
+                (disabled && disabledInfo) ? (
+                    <Tooltip title={disabledInfo} data-cy={`disabled-tab-${idx}-tooltip`} key={idx}>
+                        <span style={{ pointerEvents: 'auto' }}>
+                            {tab}
+                        </span>
+                    </Tooltip>
+                ) : (
+                    tab
+                )
             ];
 
             const aPanel =

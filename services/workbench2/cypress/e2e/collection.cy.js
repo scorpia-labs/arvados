@@ -1259,7 +1259,7 @@ describe("Collection panel tests", function () {
         cy.createCollection(adminUser.token, {
             name: trashedCollectionName,
             owner_uuid: activeUser.user.uuid,
-            trash_at: "2026-08-23T00:00:00.000Z",  // must be in the past
+            trash_at: "2010-08-23T00:00:00.000Z",  // must be in the past
             manifest_text: ". 37b51d194a7513e45b56f6524f2d51f2+3 0:3:bar\n",
         })
             .as("testTrashedCollection")
@@ -1281,8 +1281,8 @@ describe("Collection panel tests", function () {
                 cy.get('[data-cy=mpv-tabs] .Mui-selected').should('contain', 'Overview');
 
                 // Verify "Files" tab is disabled and shows the appropriate tooltip
-                cy.get('[data-cy=disabled-tab-1-tooltip]').should('contain', 'Files');
-                cy.get('[data-cy=disabled-tab-1-tooltip]').trigger('mouseover', { force: true }); // FIXME
+                cy.get('[data-cy=disabled-tab-1-tooltip] button[disabled]').should('contain', 'Files');
+                cy.get('[data-cy=disabled-tab-1-tooltip]').trigger('mouseover', { force: true });
 
                 // Confirm no network request was made for files
                 cy.then(() => {
