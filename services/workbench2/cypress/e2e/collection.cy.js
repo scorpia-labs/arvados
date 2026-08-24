@@ -1282,7 +1282,7 @@ describe("Collection panel tests", function () {
 
                 // Verify "Files" tab is disabled and shows the appropriate tooltip
                 cy.get('[data-cy=mpv-tabs] button[data-cy=tab-files]').should('have.attr', 'disabled');
-                cy.get('[data-cy=mpv-tabs] button[data-cy=tab-files]').trigger('mouseover', { force: true });
+                cy.get('[data-cy="disabled-tab-1-tooltip"]').trigger('mouseover', { force: true });
 
                 // Confirm no network request was made for files
                 cy.then(() => {
