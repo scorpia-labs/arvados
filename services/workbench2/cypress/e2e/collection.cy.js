@@ -1285,16 +1285,13 @@ describe("Collection panel tests", function () {
                     expect(filesRequestCalled).to.be.false;
                 });
 
-                // Restore collection
-                cy.get('[data-targetid="Restore"] button').click();
-                cy.waitForDom();
-
-                // Verify "Files" tab is now enabled.
+                // Restore collection and verify "Files" tab is now enabled.
+                cy.doToolbarAction("Restore");
                 cy.get('[data-cy=mpv-tabs] [data-cy=tab-files]').should('not.have.attr', 'disabled');
 
                 // Ensure the files panel loads successfully
-                cy.get('[data-cy=mpv-tabs] [data-cy=tab-files]').click();
-                cy.get('[data-cy=collection-files-panel]').should('exist');
+                cy.doMPVTabSelect("Files");
+                cy.get('[data-cy=collection-files-panel]').should('exist').and("contain", "bar");
             });
     });
 
