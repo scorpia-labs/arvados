@@ -25,7 +25,7 @@ import { KeepServiceResource } from 'models/keep-services';
 import { ApiClientAuthorization } from 'models/api-client-authorization';
 import { ExternalCredential } from 'models/external-credential';
 import pick from 'lodash/pick';
-import snakeCase from 'lodash/snakeCase';
+import { snakeCase } from 'lodash';
 
 export const ADVANCED_TAB_DIALOG = 'advancedTabDialog';
 
@@ -129,7 +129,11 @@ export const openAdvancedTabDialog = (uuid: string) =>
                     uuid,
                     metadata: metaCollection,
                     user: userCollection,
-                    apiResponseKind: collectionApiResponse,
+                    apiResponseKeys: [
+                        'uuid', 'ownerUuid', 'createdAt', 'modifiedByUserUuid', 'modifiedAt', 'portableDataHash', 'replicationDesired',
+                        'replicationConfirmedAt', 'replicationConfirmed', 'name', 'description', 'properties', 'deleteAt', 'trashAt', 'isTrashed', 'storageClassesDesired',
+                        'storageClassesConfirmed', 'storageClassesConfirmedAt', 'currentVersionUuid', 'version', 'preserveVersion', 'fileCount', 'fileSizeTotal'
+                    ],
                     data: dataCollection,
                     resourceKind: CollectionData.COLLECTION,
                     resourcePrefix: GroupContentsResourcePrefix.COLLECTION,
@@ -144,7 +148,11 @@ export const openAdvancedTabDialog = (uuid: string) =>
                     uuid,
                     metadata: metaProcess,
                     user: userProcess,
-                    apiResponseKind: containerRequestApiResponse,
+                    apiResponseKeys: [
+                        'uuid', 'ownerUuid', 'createdAt', 'modifiedAt', 'modifiedByUserUuid', 'name', 'description', 'properties', 'state', 'requestingContainerUuid', 'containerUuid',
+                        'containerCountMax', 'mounts', 'runtimeConstraints', 'containerImage', 'environment', 'cwd', 'command', 'outputPath', 'priority', 'expiresAt', 'filters', 'containerCount',
+                        'useExisting', 'schedulingParameters', 'outputUuid', 'logUuid', 'outputName', 'outputTtl', 'outputGlob'
+                    ],
                     data: dataProcess,
                     resourceKind: ProcessData.CONTAINER_REQUEST,
                     resourcePrefix: GroupContentsResourcePrefix.PROCESS,
@@ -159,7 +167,11 @@ export const openAdvancedTabDialog = (uuid: string) =>
                     uuid,
                     metadata: metaProject,
                     user: userProject,
-                    apiResponseKind: groupRequestApiResponse,
+                    apiResponseKeys: [
+                        'uuid', 'ownerUuid', 'createdAt', 'modifiedByUserUuid', 'modifiedAt', 'name',
+                        'description', 'groupClass', 'trashAt', 'isTrashed', 'deleteAt', 'properties',
+                        'canWrite', 'canManage'
+                    ],
                     data: dataProject,
                     resourceKind: ProjectData.GROUP,
                     resourcePrefix: GroupContentsResourcePrefix.PROJECT,
@@ -174,7 +186,9 @@ export const openAdvancedTabDialog = (uuid: string) =>
                     uuid,
                     metadata: '',
                     user: '',
-                    apiResponseKind: repositoryApiResponse,
+                    apiResponseKeys: [
+                        'uuid', 'ownerUuid', 'modifiedByUserUuid', 'modifiedAt', 'name', 'createdAt', 'cloneUrls'
+                    ],
                     data: dataRepository,
                     resourceKind: RepositoryData.REPOSITORY,
                     resourcePrefix: ResourcePrefix.REPOSITORIES,
@@ -189,7 +203,9 @@ export const openAdvancedTabDialog = (uuid: string) =>
                     uuid,
                     metadata: '',
                     user: '',
-                    apiResponseKind: sshKeyApiResponse,
+                    apiResponseKeys: [
+                        'uuid', 'ownerUuid', 'authorizedUserUuid', 'modifiedByUserUuid', 'modifiedAt', 'name', 'createdAt', 'expiresAt'
+                    ],
                     data: dataSshKey,
                     resourceKind: SshKeyData.SSH_KEY,
                     resourcePrefix: ResourcePrefix.AUTORIZED_KEYS,
@@ -204,7 +220,9 @@ export const openAdvancedTabDialog = (uuid: string) =>
                     uuid,
                     metadata: '',
                     user: '',
-                    apiResponseKind: virtualMachineApiResponse,
+                    apiResponseKeys: [
+                        'hostname', 'uuid', 'ownerUuid', 'modifiedByUserUuid', 'modifiedAt', 'createdAt'
+                    ],
                     data: dataVirtualMachine,
                     resourceKind: VirtualMachineData.VIRTUAL_MACHINE,
                     resourcePrefix: ResourcePrefix.VIRTUAL_MACHINES,
@@ -219,7 +237,10 @@ export const openAdvancedTabDialog = (uuid: string) =>
                     uuid,
                     metadata: '',
                     user: '',
-                    apiResponseKind: keepServiceApiResponse,
+                    apiResponseKeys: [
+                        'uuid', 'ownerUuid', 'modifiedByUserUuid', 'modifiedAt', 'serviceHost', 'servicePort', 'serviceSslFlag', 'serviceType',
+                        'createdAt', 'readOnly'
+                    ],
                     data: dataKeepService,
                     resourceKind: KeepServiceData.KEEP_SERVICE,
                     resourcePrefix: ResourcePrefix.KEEP_SERVICES,
@@ -240,7 +261,10 @@ export const openAdvancedTabDialog = (uuid: string) =>
                     uuid,
                     metadata,
                     user: '',
-                    apiResponseKind: userApiResponse,
+                    apiResponseKeys: [
+                        'uuid', 'ownerUuid', 'createdAt', 'modifiedByUserUuid', 'modifiedAt',
+                        'email', 'firstName', 'lastName', 'username', 'isActive', 'isAdmin', 'prefs'
+                    ],
                     data,
                     resourceKind: UserData.USER,
                     resourcePrefix: ResourcePrefix.USERS,
@@ -256,7 +280,10 @@ export const openAdvancedTabDialog = (uuid: string) =>
                     uuid,
                     metadata: '',
                     user: '',
-                    apiResponseKind: apiClientAuthorizationApiResponse,
+                    apiResponseKeys: [
+                        'uuid', 'ownerUuid', 'apiToken', 'createdByIpAddress', 'lastUsedByIpAddress',
+                        'lastUsedAt', 'expiresAt', 'createdAt', 'updatedAt', 'scopes'
+                    ],
                     data: dataApiClientAuthorization,
                     resourceKind: ApiClientAuthorizationsData.API_CLIENT_AUTHORIZATION,
                     resourcePrefix: ResourcePrefix.API_CLIENT_AUTHORIZATIONS,
@@ -272,7 +299,10 @@ export const openAdvancedTabDialog = (uuid: string) =>
                     uuid,
                     metadata: '',
                     user: '',
-                    apiResponseKind: linkApiResponse,
+                    apiResponseKeys: [
+                        'uuid', 'name', 'headUuid', 'headKind', 'tailUuid', 'tailKind', 'linkClass',
+                        'ownerUuid', 'createdAt', 'modifiedAt', 'modifiedByUserUuid', 'properties'
+                    ],
                     data: dataLink,
                     resourceKind: LinkData.LINK,
                     resourcePrefix: ResourcePrefix.LINKS,
@@ -288,7 +318,9 @@ export const openAdvancedTabDialog = (uuid: string) =>
                     uuid,
                     metadata: '',
                     user: '',
-                    apiResponseKind: wfApiResponse,
+                    apiResponseKeys: [
+                        'uuid', 'name', 'ownerUuid', 'createdAt', 'modifiedAt', 'modifiedByUserUuid', 'description'
+                    ],
                     data: dataWf,
                     resourceKind: WorkflowData.WORKFLOW,
                     resourcePrefix: GroupContentsResourcePrefix.WORKFLOW,
@@ -304,7 +336,9 @@ export const openAdvancedTabDialog = (uuid: string) =>
                     uuid,
                     metadata: '',
                     user: '',
-                    apiResponseKind: extCredApiResponse,
+                    apiResponseKeys: [
+                        'uuid', 'ownerUuid', 'createdAt', 'modifiedByUserUuid', 'modifiedAt', 'name', 'description', 'scopes', 'expiresAt'
+                    ],
                     data: dataExtCred,
                     resourceKind: ExternalCredentialData.EXTERNAL_CREDENTIAL,
                     resourcePrefix: ResourcePrefix.EXTERNAL_CREDENTIALS,
@@ -338,7 +372,7 @@ interface AdvancedTabData {
     uuid: string;
     metadata: ListResults<LinkResource> | string;
     user: UserResource | string;
-    apiResponseKind: (apiResponse: any) => string;
+    apiResponseKeys: string[];
     data: AdvanceResponseData;
     resourceKind: AdvanceResourceKind;
     resourcePrefix: AdvanceResourcePrefix;
@@ -346,12 +380,12 @@ interface AdvancedTabData {
     property: any;
 }
 
-const advancedTabData = ({ uuid, user, metadata, apiResponseKind, data, resourceKind, resourcePrefix, resourceKindProperty, property }: AdvancedTabData) => {
+const advancedTabData = ({ uuid, user, metadata, apiResponseKeys, data, resourceKind, resourcePrefix, resourceKindProperty, property }: AdvancedTabData) => {
     return {
         uuid,
         user,
         metadata,
-        apiResponse: apiResponseKind(data),
+        apiResponse: formatApiResponse(data, apiResponseKeys),
         pythonHeader: pythonHeader(resourceKind),
         pythonExample: pythonExample(uuid, resourcePrefix),
         cliGetHeader: cliGetHeader(resourceKind),
@@ -421,85 +455,3 @@ const formatApiResponse = (apiResponse: any, keys: string[]): string => {
     return JSON.stringify(snaked, null, 2);
 };
 
-const containerRequestApiResponse = (apiResponse: ContainerRequestResource): string => {
-    return formatApiResponse(apiResponse, [
-        'uuid', 'ownerUuid', 'createdAt', 'modifiedAt', 'modifiedByUserUuid', 'name', 'description', 'properties', 'state', 'requestingContainerUuid', 'containerUuid',
-        'containerCountMax', 'mounts', 'runtimeConstraints', 'containerImage', 'environment', 'cwd', 'command', 'outputPath', 'priority', 'expiresAt', 'filters', 'containerCount',
-        'useExisting', 'schedulingParameters', 'outputUuid', 'logUuid', 'outputName', 'outputTtl', 'outputGlob'
-    ]);
-};
-
-const collectionApiResponse = (apiResponse: CollectionResource): string => {
-    return formatApiResponse(apiResponse, [
-        'uuid', 'ownerUuid', 'createdAt', 'modifiedByUserUuid', 'modifiedAt', 'portableDataHash', 'replicationDesired',
-        'replicationConfirmedAt', 'replicationConfirmed', 'name', 'description', 'properties', 'deleteAt', 'trashAt', 'isTrashed', 'storageClassesDesired',
-        'storageClassesConfirmed', 'storageClassesConfirmedAt', 'currentVersionUuid', 'version', 'preserveVersion', 'fileCount', 'fileSizeTotal'
-    ]);
-};
-
-const groupRequestApiResponse = (apiResponse: ProjectResource): string => {
-    return formatApiResponse(apiResponse, [
-        'uuid', 'ownerUuid', 'createdAt', 'modifiedByUserUuid', 'modifiedAt', 'name',
-        'description', 'groupClass', 'trashAt', 'isTrashed', 'deleteAt', 'properties',
-        'canWrite', 'canManage'
-    ]);
-};
-
-const repositoryApiResponse = (apiResponse: RepositoryResource): string => {
-    return formatApiResponse(apiResponse, [
-        'uuid', 'ownerUuid', 'modifiedByUserUuid', 'modifiedAt', 'name', 'createdAt', 'cloneUrls'
-    ]);
-};
-
-const sshKeyApiResponse = (apiResponse: SshKeyResource): string => {
-    return formatApiResponse(apiResponse, [
-        'uuid', 'ownerUuid', 'authorizedUserUuid', 'modifiedByUserUuid', 'modifiedAt', 'name', 'createdAt', 'expiresAt'
-    ]);
-};
-
-const virtualMachineApiResponse = (apiResponse: VirtualMachinesResource): string => {
-    return formatApiResponse(apiResponse, [
-        'hostname', 'uuid', 'ownerUuid', 'modifiedByUserUuid', 'modifiedAt', 'createdAt'
-    ]);
-};
-
-const keepServiceApiResponse = (apiResponse: KeepServiceResource): string => {
-    return formatApiResponse(apiResponse, [
-        'uuid', 'ownerUuid', 'modifiedByUserUuid', 'modifiedAt', 'serviceHost', 'servicePort', 'serviceSslFlag', 'serviceType',
-        'createdAt', 'readOnly'
-    ]);
-};
-
-const userApiResponse = (apiResponse: UserResource): string => {
-    return formatApiResponse(apiResponse, [
-        'uuid', 'ownerUuid', 'createdAt', 'modifiedByUserUuid', 'modifiedAt',
-        'email', 'firstName', 'lastName', 'username', 'isActive', 'isAdmin', 'prefs'
-    ]);
-};
-
-const apiClientAuthorizationApiResponse = (apiResponse: ApiClientAuthorization): string => {
-    return formatApiResponse(apiResponse, [
-        'uuid', 'ownerUuid', 'apiToken', 'createdByIpAddress', 'lastUsedByIpAddress',
-        'lastUsedAt', 'expiresAt', 'createdAt', 'updatedAt', 'scopes'
-    ]);
-};
-
-const linkApiResponse = (apiResponse: LinkResource): string => {
-    return formatApiResponse(apiResponse, [
-        'uuid', 'name', 'headUuid', 'headKind', 'tailUuid', 'tailKind', 'linkClass',
-        'ownerUuid', 'createdAt', 'modifiedAt', 'modifiedByUserUuid', 'properties'
-    ]);
-};
-
-
-const wfApiResponse = (apiResponse: WorkflowResource): string => {
-    return formatApiResponse(apiResponse, [
-        'uuid', 'name', 'ownerUuid', 'createdAt', 'modifiedAt', 'modifiedByUserUuid', 'description'
-    ]);
-};
-
-const extCredApiResponse = (apiResponse: ExternalCredential): string => {
-    return formatApiResponse(apiResponse, [
-        'uuid', 'ownerUuid', 'createdAt', 'modifiedByUserUuid', 'modifiedAt', 'name', 'description', 'scopes', 'expiresAt'
-    ]);
-};
