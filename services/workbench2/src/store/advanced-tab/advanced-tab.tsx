@@ -26,13 +26,13 @@ import { ApiClientAuthorization } from 'models/api-client-authorization';
 import React from 'react';
 import { ExternalCredential } from 'models/external-credential';
 import pick from 'lodash/pick';
-import snakeCase from 'lodash/snakeCase';
+import { snakeCase } from 'lodash';
 
 export const ADVANCED_TAB_DIALOG = 'advancedTabDialog';
 
 export interface AdvancedTabDialogData {
     uuid: string;
-    apiResponse: JSX.Element;
+    apiResponse: string;
     metadata: ListResults<LinkResource> | string;
     user: UserResource | string;
     pythonHeader: string;
@@ -339,7 +339,7 @@ interface AdvancedTabData {
     uuid: string;
     metadata: ListResults<LinkResource> | string;
     user: UserResource | string;
-    apiResponseKind: (apiResponse) => JSX.Element;
+    apiResponseKind: (apiResponse: any) => string;
     data: AdvanceResponseData;
     resourceKind: AdvanceResourceKind;
     resourcePrefix: AdvanceResourcePrefix;
@@ -413,16 +413,16 @@ EOF`;
     return curlExample;
 };
 
-const formatApiResponse = (apiResponse: any, keys: string[]) => {
+const formatApiResponse = (apiResponse: any, keys: string[]): string => {
     const picked = pick(apiResponse, keys);
     const snaked: Record<string, any> = {};
     for (const key in picked) {
         snaked[snakeCase(key)] = picked[key];
     }
-    return <span>{JSON.stringify(snaked, null, 2)}</span>;
+    return JSON.stringify(snaked, null, 2);
 };
 
-const containerRequestApiResponse = (apiResponse: ContainerRequestResource): JSX.Element => {
+const containerRequestApiResponse = (apiResponse: ContainerRequestResource): string => {
     return formatApiResponse(apiResponse, [
         'uuid', 'ownerUuid', 'createdAt', 'modifiedAt', 'modifiedByUserUuid', 'name', 'description', 'properties', 'state', 'requestingContainerUuid', 'containerUuid',
         'containerCountMax', 'mounts', 'runtimeConstraints', 'containerImage', 'environment', 'cwd', 'command', 'outputPath', 'priority', 'expiresAt', 'filters', 'containerCount',
@@ -430,7 +430,7 @@ const containerRequestApiResponse = (apiResponse: ContainerRequestResource): JSX
     ]);
 };
 
-const collectionApiResponse = (apiResponse: CollectionResource): JSX.Element => {
+const collectionApiResponse = (apiResponse: CollectionResource): string => {
     return formatApiResponse(apiResponse, [
         'uuid', 'ownerUuid', 'createdAt', 'modifiedByUserUuid', 'modifiedAt', 'portableDataHash', 'replicationDesired',
         'replicationConfirmedAt', 'replicationConfirmed', 'name', 'description', 'properties', 'deleteAt', 'trashAt', 'isTrashed', 'storageClassesDesired',
@@ -438,7 +438,7 @@ const collectionApiResponse = (apiResponse: CollectionResource): JSX.Element => 
     ]);
 };
 
-const groupRequestApiResponse = (apiResponse: ProjectResource): JSX.Element => {
+const groupRequestApiResponse = (apiResponse: ProjectResource): string => {
     return formatApiResponse(apiResponse, [
         'uuid', 'ownerUuid', 'createdAt', 'modifiedByUserUuid', 'modifiedAt', 'name',
         'description', 'groupClass', 'trashAt', 'isTrashed', 'deleteAt', 'properties',
@@ -446,46 +446,46 @@ const groupRequestApiResponse = (apiResponse: ProjectResource): JSX.Element => {
     ]);
 };
 
-const repositoryApiResponse = (apiResponse: RepositoryResource): JSX.Element => {
+const repositoryApiResponse = (apiResponse: RepositoryResource): string => {
     return formatApiResponse(apiResponse, [
         'uuid', 'ownerUuid', 'modifiedByUserUuid', 'modifiedAt', 'name', 'createdAt', 'cloneUrls'
     ]);
 };
 
-const sshKeyApiResponse = (apiResponse: SshKeyResource): JSX.Element => {
+const sshKeyApiResponse = (apiResponse: SshKeyResource): string => {
     return formatApiResponse(apiResponse, [
         'uuid', 'ownerUuid', 'authorizedUserUuid', 'modifiedByUserUuid', 'modifiedAt', 'name', 'createdAt', 'expiresAt'
     ]);
 };
 
-const virtualMachineApiResponse = (apiResponse: VirtualMachinesResource): JSX.Element => {
+const virtualMachineApiResponse = (apiResponse: VirtualMachinesResource): string => {
     return formatApiResponse(apiResponse, [
         'hostname', 'uuid', 'ownerUuid', 'modifiedByUserUuid', 'modifiedAt', 'createdAt'
     ]);
 };
 
-const keepServiceApiResponse = (apiResponse: KeepServiceResource): JSX.Element => {
+const keepServiceApiResponse = (apiResponse: KeepServiceResource): string => {
     return formatApiResponse(apiResponse, [
         'uuid', 'ownerUuid', 'modifiedByUserUuid', 'modifiedAt', 'serviceHost', 'servicePort', 'serviceSslFlag', 'serviceType',
         'createdAt', 'readOnly'
     ]);
 };
 
-const userApiResponse = (apiResponse: UserResource): JSX.Element => {
+const userApiResponse = (apiResponse: UserResource): string => {
     return formatApiResponse(apiResponse, [
         'uuid', 'ownerUuid', 'createdAt', 'modifiedByUserUuid', 'modifiedAt',
         'email', 'firstName', 'lastName', 'username', 'isActive', 'isAdmin', 'prefs'
     ]);
 };
 
-const apiClientAuthorizationApiResponse = (apiResponse: ApiClientAuthorization): JSX.Element => {
+const apiClientAuthorizationApiResponse = (apiResponse: ApiClientAuthorization): string => {
     return formatApiResponse(apiResponse, [
         'uuid', 'ownerUuid', 'apiToken', 'createdByIpAddress', 'lastUsedByIpAddress',
         'lastUsedAt', 'expiresAt', 'createdAt', 'updatedAt', 'scopes'
     ]);
 };
 
-const linkApiResponse = (apiResponse: LinkResource): JSX.Element => {
+const linkApiResponse = (apiResponse: LinkResource): string => {
     return formatApiResponse(apiResponse, [
         'uuid', 'name', 'headUuid', 'headKind', 'tailUuid', 'tailKind', 'linkClass',
         'ownerUuid', 'createdAt', 'modifiedAt', 'modifiedByUserUuid', 'properties'
@@ -493,13 +493,13 @@ const linkApiResponse = (apiResponse: LinkResource): JSX.Element => {
 };
 
 
-const wfApiResponse = (apiResponse: WorkflowResource): JSX.Element => {
+const wfApiResponse = (apiResponse: WorkflowResource): string => {
     return formatApiResponse(apiResponse, [
         'uuid', 'name', 'ownerUuid', 'createdAt', 'modifiedAt', 'modifiedByUserUuid', 'description'
     ]);
 };
 
-const extCredApiResponse = (apiResponse: ExternalCredential): JSX.Element => {
+const extCredApiResponse = (apiResponse: ExternalCredential): string => {
     return formatApiResponse(apiResponse, [
         'uuid', 'ownerUuid', 'createdAt', 'modifiedByUserUuid', 'modifiedAt', 'name', 'description', 'scopes', 'expiresAt'
     ]);
