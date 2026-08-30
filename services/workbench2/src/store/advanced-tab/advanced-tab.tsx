@@ -26,7 +26,7 @@ import { ApiClientAuthorization } from 'models/api-client-authorization';
 import React from 'react';
 import { ExternalCredential } from 'models/external-credential';
 import pick from 'lodash/pick';
-import { snakeCase } from 'lodash';
+import snakeCase from 'lodash/snakeCase';
 
 export const ADVANCED_TAB_DIALOG = 'advancedTabDialog';
 
