@@ -49,3 +49,27 @@ const domPurifyConfig: TDomPurifyConfig = {
 
 export const sanitizeHTML = (dirtyString: string): string => DOMPurify.sanitize(dirtyString, domPurifyConfig);
 
+const tableCellPurifyConfig: TDomPurifyConfig = {
+    ALLOWED_TAGS: [
+        'a',
+        'b',
+        'blockquote',
+        'br',
+        'code',
+        'del',
+        'em',
+        'hr',
+        'i',
+        'img',
+        'kbd',
+        'pre',
+        's',
+        'span',
+        'strong',
+        'sub',
+        'sup',
+    ],
+    ALLOWED_ATTR: ['src', 'width', 'height', 'href', 'alt', 'title', 'style' ],
+};
+
+export const sanitizeTableCellContent = (dirtyString: string): string => DOMPurify.sanitize(dirtyString, tableCellPurifyConfig);
