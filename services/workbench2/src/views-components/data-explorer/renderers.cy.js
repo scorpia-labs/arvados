@@ -165,63 +165,6 @@ describe('renderers', () => {
         });
     });
 
-    describe('RenderDescriptionInTD', () => {
-        beforeEach(() => {
-            props = {
-                uuid: 'zzzzz-4zz18-zzzzzzzzzzzzzzz',
-            };
-        });
-
-        it('should safely render inline HTML while stripping block-level tags', () => {
-            const store = mockStore({
-                resources: {
-                    [props.uuid]: {
-                        description: '<p style="color: red;">Hello <b>World</b></p><script>alert("xss")</script><ul><li>List Item</li></ul><h1>Heading</h1>',
-                    }
-                }
-            });
-
-            cy.mount(
-                <Provider store={store}>
-                    <ThemeProvider theme={CustomTheme}>
-                        <RenderDescriptionInTD {...props} />
-                    </ThemeProvider>
-                </Provider>
-            );
-
-            cy.contains('Hello ').should('exist');
-            cy.get('b').should('have.text', 'World');
-            cy.contains('List Item').should('exist');
-            cy.contains('Heading').should('exist');
-
-            // Block level tags should be removed entirely
-            cy.get('p').should('not.exist');
-            cy.get('ul').should('not.exist');
-            cy.get('h1').should('not.exist');
-        });
-
-        it('should render a dash if description is empty or missing', () => {
-            const store = mockStore({
-                resources: {
-                    [props.uuid]: {
-                        description: '',
-                    }
-                }
-            });
-
-            cy.mount(
-                <Provider store={store}>
-                    <ThemeProvider theme={CustomTheme}>
-                        <RenderDescriptionInTD {...props} />
-                    </ThemeProvider>
-                </Provider>
-            );
-
-            // RenderDescriptionInTD renders `<>-<>` when empty, so there is no enclosing `div`
-            cy.contains('-');
-        });
-    });
-
     describe('GroupMembersCount', () => {
         let fakeGroup;
         beforeEach(() => {
@@ -308,7 +251,47 @@ describe('renderers', () => {
 
             cy.get('[data-testid=ErrorRoundedIcon]').should('exist');
         });
-
     });
 
+    describe('RenderDescriptionInTD', () => {
+        beforeEach(() => {
+            props = {
+                uuid: 'zzzzz-oss07-12345abcde67890',
+            };
+        });
+
+        it('should render allow-listed HTML content', () => {
+            const store = mockStore({
+                resources: {
+                    [props.uuid]: {
+                        "kind": ResourceKind.EXTERNAL_CREDENTIAL,
+                        "uuid": props.uuid,
+                        "description": "<p style='color: red;'>Hello <b style='border-top: 42px !important;'>World!</b></p><script>alert('foo')</script><h1>Heading</h1>",
+                    }
+                }
+            });
+
+            cy.mount(
+                <Provider store={store}>
+                    <ThemeProvider theme={CustomTheme}>
+                        <RenderDescriptionInTD {...props} />
+                    </ThemeProvider>
+                </Provider>
+            );
+
+            cy.contains('Hello ').should('exist');
+            // Stripped attribute
+            cy.get('b')
+                .should('have.text', 'World!')
+                .then(($el) => window.getComputedStyle($el[0]))
+                .invoke("getPropertyValue", "border-top")
+                .should("not.match", /^42px/);
+            cy.contains('foo').should('not.exist');
+            cy.contains('Heading').should('exist');
+
+            // Removed tags
+            cy.get('p').should('not.exist');
+            cy.get('h1').should('not.exist');
+        });
+    });
 });

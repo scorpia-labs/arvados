@@ -927,7 +927,7 @@ export const RenderDescriptionInTD = connect((state: RootState, props: { uuid: s
 })((props: { description?: string }) =>
     props.description ? <Typography
         component='div'
-        // Use sanitizeTableCellContent to strip <p> and other non-flow/problematic tags
+        // Strip <p> and other tags that nest poorly in table cell.
         dangerouslySetInnerHTML={{ __html: sanitizeTableCellContent(props.description) }} />
     : <>-</>);
 
