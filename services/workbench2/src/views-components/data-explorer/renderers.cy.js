@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0
 
 import React from 'react';
-import { GroupMembersCount, ProcessStatus, ResourceFileSize } from './renderers';
+import { GroupMembersCount, ProcessStatus, ResourceFileSize, RenderDescriptionInTD } from './renderers';
 import { Provider } from 'react-redux';
 import configureMockStore from 'redux-mock-store'
 import { ResourceKind } from '../../models/resource';
@@ -162,6 +162,63 @@ describe('renderers', () => {
 
             // then
             cy.get('p').should('have.text', '-');
+        });
+    });
+
+    describe('RenderDescriptionInTD', () => {
+        beforeEach(() => {
+            props = {
+                uuid: 'zzzzz-4zz18-zzzzzzzzzzzzzzz',
+            };
+        });
+
+        it('should safely render inline HTML while stripping block-level tags', () => {
+            const store = mockStore({
+                resources: {
+                    [props.uuid]: {
+                        description: '<p style="color: red;">Hello <b>World</b></p><script>alert("xss")</script><ul><li>List Item</li></ul><h1>Heading</h1>',
+                    }
+                }
+            });
+
+            cy.mount(
+                <Provider store={store}>
+                    <ThemeProvider theme={CustomTheme}>
+                        <RenderDescriptionInTD {...props} />
+                    </ThemeProvider>
+                </Provider>
+            );
+
+            cy.contains('Hello ').should('exist');
+            cy.get('b').should('have.text', 'World');
+            cy.contains('List Item').should('exist');
+            cy.contains('Heading').should('exist');
+
+            // Block level tags should be removed entirely
+            cy.get('p').should('not.exist');
+            cy.get('ul').should('not.exist');
+            cy.get('h1').should('not.exist');
+        });
+
+        it('should render a dash if description is empty or missing', () => {
+            const store = mockStore({
+                resources: {
+                    [props.uuid]: {
+                        description: '',
+                    }
+                }
+            });
+
+            cy.mount(
+                <Provider store={store}>
+                    <ThemeProvider theme={CustomTheme}>
+                        <RenderDescriptionInTD {...props} />
+                    </ThemeProvider>
+                </Provider>
+            );
+
+            // RenderDescriptionInTD renders `<>-<>` when empty, so there is no enclosing `div`
+            cy.contains('-');
         });
     });
 

@@ -49,16 +49,18 @@ const domPurifyConfig: TDomPurifyConfig = {
 
 export const sanitizeHTML = (dirtyString: string): string => DOMPurify.sanitize(dirtyString, domPurifyConfig);
 
-// Config for further sanitization of table cell content; used for display only.
 const tableCellPurifyConfig: TDomPurifyConfig = {
     ALLOWED_TAGS: [
         'a',
         'b',
+        'blockquote',
         'br',
         'code',
         'del',
         'em',
+        'hr',
         'i',
+        'img',
         'kbd',
         'pre',
         's',
@@ -67,7 +69,7 @@ const tableCellPurifyConfig: TDomPurifyConfig = {
         'sub',
         'sup',
     ],
-    ALLOWED_ATTR: ['href', 'title'],
+    ALLOWED_ATTR: ['src', 'width', 'height', 'href', 'alt', 'title', 'style' ],
 };
 
 export const sanitizeTableCellContent = (dirtyString: string): string => DOMPurify.sanitize(dirtyString, tableCellPurifyConfig);
