@@ -57,7 +57,7 @@ describe('WebSocketService', () => {
         }
 
         // Stub the global WebSocket
-        cy.stub(window, 'WebSocket', url => webSocketStub(url));
+        cy.stub(window, 'WebSocket').callsFake(url => webSocketStub(url));
 
         // Mock auth service
         mockAuthService = {
