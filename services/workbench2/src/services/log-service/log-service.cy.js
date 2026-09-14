@@ -124,7 +124,7 @@ describe("LogService", () => {
         const containerRequest = {uuid: 'zzzzz-xvhdp-000000000000000', containerUuid: 'zzzzz-dz642-000000000000000'};
         const fileRecord = {name: `stdout.txt`};
         const fileContents = `Line 1\nLine 2\nLine 3`;
-        cy.stub(apiWebdavClient, 'get', (path, options) => {
+        cy.stub(apiWebdavClient, 'get').callsFake((path, options) => {
                 const matches = /bytes=([0-9]+)-([0-9]+)/.exec(options.headers?.Range || '');
                 if (matches?.length === 3) {
                     return Promise.resolve({responseText: fileContents.substring(Number(matches[1]), Number(matches[2]) + 1)})
