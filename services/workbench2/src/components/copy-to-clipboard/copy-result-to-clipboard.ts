@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: AGPL-3.0
 
 import React from 'react';
-import copy from 'copy-to-clipboard';
 
 interface CopyToClipboardProps {
   getText: (() => string);
@@ -27,17 +26,22 @@ export default class CopyResultToClipboard extends React.PureComponent<CopyToCli
       getText,
       onCopy,
       children,
-      options
     } = this.props;
 
     const elem = React.Children.only(children);
 
     const text = getText();
 
-    const result = copy(text, options);
-
-    if (onCopy) {
-      onCopy(text, result);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text)
+        .then(() => {
+          if (onCopy) onCopy(text, true);
+        })
+        .catch(() => {
+          if (onCopy) onCopy(text, false);
+        });
+    } else {
+      if (onCopy) onCopy(text, false);
     }
 
     // Bypass onClick if it was present

@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: AGPL-3.0
 
-import copy from "copy-to-clipboard";
 import { Dispatch } from "redux";
 import { getNavUrl } from "routes/routes";
 import { RootState } from "store/store";
@@ -22,38 +21,47 @@ export const copyToClipboardAction = (resources: Array<any>) => (dispatch: Dispa
     // Copy link to clipboard omits token to avoid accidental sharing
 
     let url = getNavUrl(resources[0].uuid, getState().auth, false);
-    let wasCopied;
 
-    if (url[0] === "/") wasCopied = copy(`${window.location.origin}${url}`);
+    let textToCopy = "";
+    if (url[0] === "/") textToCopy = `${window.location.origin}${url}`;
     else if (url.length) {
-        wasCopied = copy(url);
+        textToCopy = url;
     }
 
-    if (wasCopied)
-        dispatch(
-            snackbarActions.OPEN_SNACKBAR({
-                message: "Copied",
-                hideDuration: 8000,
-                kind: SnackbarKind.SUCCESS,
-            })
-        );
+    if (textToCopy && navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            dispatch(
+                snackbarActions.OPEN_SNACKBAR({
+                    message: "Copied",
+                    hideDuration: 8000,
+                    kind: SnackbarKind.SUCCESS,
+                })
+            );
+        }).catch(() => {
+            // Silently fail or log, existing code didn't handle failure here
+        });
+    }
 };
 
 export const copyStringToClipboardAction = (string: string) => (dispatch: Dispatch, getState: () => RootState) => {
-    let wasCopied;
-
-    if (string.length) {
-        wasCopied = copy(string);
-    }
-
-    if (wasCopied){
-        dispatch(
-            snackbarActions.OPEN_SNACKBAR({
-                message: "Copied",
-                hideDuration: 8000,
-                kind: SnackbarKind.SUCCESS,
-            })
-        );
+    if (string.length && navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(string).then(() => {
+            dispatch(
+                snackbarActions.OPEN_SNACKBAR({
+                    message: "Copied",
+                    hideDuration: 8000,
+                    kind: SnackbarKind.SUCCESS,
+                })
+            );
+        }).catch(() => {
+            dispatch(
+                snackbarActions.OPEN_SNACKBAR({
+                    message: "Failed to copy",
+                    hideDuration: 10000,
+                    kind: SnackbarKind.ERROR,
+                })
+            );
+        });
     } else {
         dispatch(
             snackbarActions.OPEN_SNACKBAR({
