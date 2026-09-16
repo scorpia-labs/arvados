@@ -32,7 +32,7 @@ export default class CopyResultToClipboard extends React.PureComponent<CopyToCli
 
     const text = getText();
 
-    if (navigator.clipboard && navigator.clipboard.writeText) {
+    if (navigator.clipboard) {
       navigator.clipboard.writeText(text)
         .then(() => {
           if (onCopy) onCopy(text, true);
@@ -45,7 +45,7 @@ export default class CopyResultToClipboard extends React.PureComponent<CopyToCli
     }
 
     // Bypass onClick if it was present
-    if (elem && elem.props && typeof elem.props.onClick === 'function') {
+    if (typeof elem?.props?.onClick === 'function') {
       elem.props.onClick(event);
     }
   };

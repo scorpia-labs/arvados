@@ -28,7 +28,7 @@ export const copyToClipboardAction = (resources: Array<any>) => (dispatch: Dispa
         textToCopy = url;
     }
 
-    if (textToCopy && navigator.clipboard && navigator.clipboard.writeText) {
+    if (textToCopy && navigator.clipboard) {
         navigator.clipboard.writeText(textToCopy).then(() => {
             dispatch(
                 snackbarActions.OPEN_SNACKBAR({
@@ -38,13 +38,19 @@ export const copyToClipboardAction = (resources: Array<any>) => (dispatch: Dispa
                 })
             );
         }).catch(() => {
-            // Silently fail or log, existing code didn't handle failure here
+            dispatch(
+                snackbarActions.OPEN_SNACKBAR({
+                    message: "Failed to copy",
+                    hideDuration: 10000,
+                    kind: SnackbarKind.ERROR,
+                })
+            );
         });
     }
 };
 
 export const copyStringToClipboardAction = (string: string) => (dispatch: Dispatch, getState: () => RootState) => {
-    if (string.length && navigator.clipboard && navigator.clipboard.writeText) {
+    if (string.length && navigator.clipboard) {
         navigator.clipboard.writeText(string).then(() => {
             dispatch(
                 snackbarActions.OPEN_SNACKBAR({

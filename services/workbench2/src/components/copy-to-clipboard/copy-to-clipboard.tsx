@@ -14,7 +14,7 @@ export const CopyToClipboard = ({ text, onCopy, children }: CopyToClipboardProps
     const elem = React.Children.only(children) as React.ReactElement<any>;
 
     const onClick = (event: React.MouseEvent) => {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
+        if (navigator.clipboard) {
             navigator.clipboard.writeText(text)
                 .then(() => {
                     if (onCopy) onCopy(text, true);
@@ -26,7 +26,7 @@ export const CopyToClipboard = ({ text, onCopy, children }: CopyToClipboardProps
             if (onCopy) onCopy(text, false);
         }
 
-        if (elem && elem.props && typeof elem.props.onClick === 'function') {
+        if (typeof elem?.props?.onClick === 'function') {
             elem.props.onClick(event);
         }
     };
