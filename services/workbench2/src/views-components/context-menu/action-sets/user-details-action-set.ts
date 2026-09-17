@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: AGPL-3.0
 
-import { copyStringToClipboardAction } from 'store/clipboard/clipboard.actions';
 import { ContextMenuActionSet } from 'views-components/context-menu/context-menu-action-set';
 import { AdvancedIcon, UserPanelIcon, DetailsIcon, CopyIcon } from 'components/icon/icon';
 import { openAdvancedTabDialog } from 'store/advanced-tab/advanced-tab';
@@ -10,6 +9,7 @@ import { openDetailsPanel } from 'store/details-panel/details-panel-action';
 import { navigateToUserProfile } from 'store/navigation/navigation-action';
 import { needsUserProfileLink } from 'store/context-menu/context-menu-filters';
 import { ContextMenuActionNames } from 'views-components/context-menu/context-menu-action-set';
+import { copyStringToClipboardAction } from 'store/open-in-new-tab/open-in-new-tab.actions';
 
 export const UserDetailsActionSet: ContextMenuActionSet = [
     [

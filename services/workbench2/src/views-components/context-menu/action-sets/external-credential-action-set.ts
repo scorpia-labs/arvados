@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: AGPL-3.0
 
-import { copyStringToClipboardAction } from 'store/clipboard/clipboard.actions';
 import { Dispatch } from "redux";
 import { ContextMenuResource } from "store/context-menu/context-menu";
 import { ContextMenuActionSet, ContextMenuActionNames } from "../context-menu-action-set";
@@ -11,6 +10,7 @@ import { openRemoveExternalCredentialDialog, openExternalCredentialUpdateDialog 
 import { ShareIcon } from "components/icon/icon";
 import { openSharingDialog } from "store/sharing-dialog/sharing-dialog-actions";
 import { openAdvancedTabDialog } from "store/advanced-tab/advanced-tab";
+import { copyStringToClipboardAction } from "store/open-in-new-tab/open-in-new-tab.actions";
 
 export const advancedAction = {
     icon: AdvancedIcon,

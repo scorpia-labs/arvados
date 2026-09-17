@@ -2,12 +2,11 @@
 //
 // SPDX-License-Identifier: AGPL-3.0
 
-import { copyLinkToClipboardAction, copyStringToClipboardAction } from 'store/clipboard/clipboard.actions';
 import { ContextMenuActionSet, ContextMenuActionNames } from '../context-menu-action-set';
 import { DetailsIcon, AdvancedIcon, OpenIcon, Link, CopyIcon } from 'components/icon/icon';
 import { openAdvancedTabDialog } from 'store/advanced-tab/advanced-tab';
 import { openDetailsPanel } from 'store/details-panel/details-panel-action';
-import { openInNewTabAction } from 'store/open-in-new-tab/open-in-new-tab.actions';
+import { copyStringToClipboardAction, copyToClipboardAction, openInNewTabAction } from 'store/open-in-new-tab/open-in-new-tab.actions';
 
 export const searchResultsActionSet: ContextMenuActionSet = [
     [
@@ -22,7 +21,7 @@ export const searchResultsActionSet: ContextMenuActionSet = [
             icon: Link,
             name: ContextMenuActionNames.COPY_LINK_TO_CLIPBOARD,
             execute: (dispatch, resources) => {
-                dispatch<any>(copyLinkToClipboardAction(resources));
+                dispatch<any>(copyToClipboardAction(resources));
             },
         },
         {

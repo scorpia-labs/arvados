@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: AGPL-3.0
 
-import { copyLinkToClipboardAction, copyStringToClipboardAction } from 'store/clipboard/clipboard.actions';
 import { ContextMenuActionSet, ContextMenuActionNames } from "../context-menu-action-set";
 import { NewProjectIcon, RenameIcon, MoveToIcon, DetailsIcon, AdvancedIcon, OpenIcon, Link, FolderSharedIcon, CopyIcon } from "components/icon/icon";
 import { ToggleFavoriteAction } from "../actions/favorite-action";
@@ -17,7 +16,7 @@ import { ShareIcon } from "components/icon/icon";
 import { openSharingDialog } from "store/sharing-dialog/sharing-dialog-actions";
 import { openAdvancedTabDialog } from "store/advanced-tab/advanced-tab";
 import { openDetailsPanel } from "store/details-panel/details-panel-action";
-import { openInNewTabAction } from "store/open-in-new-tab/open-in-new-tab.actions";
+import { copyToClipboardAction, copyStringToClipboardAction, openInNewTabAction } from "store/open-in-new-tab/open-in-new-tab.actions";
 import { openWebDavS3InfoDialog } from "store/collections/collection-info-actions";
 import { ToggleLockAction } from "../actions/lock-action";
 import { freezeProject, unfreezeProject } from "store/projects/project-lock-actions";
@@ -44,7 +43,7 @@ export const copyToClipboardMenuAction = {
     icon: Link,
     name: ContextMenuActionNames.COPY_LINK_TO_CLIPBOARD,
     execute: (dispatch, resources) => {
-        dispatch(copyLinkToClipboardAction(resources));
+        dispatch(copyToClipboardAction(resources));
     },
 };
 
