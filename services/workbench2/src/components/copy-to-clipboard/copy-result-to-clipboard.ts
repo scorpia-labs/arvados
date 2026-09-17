@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0
 
 import React from 'react';
-import { writeTextToClipboard } from './clipboard-action';
+import { writeTextToClipboard } from './copy-to-clipboard';
 
 interface CopyToClipboardProps {
   getText: (() => string);

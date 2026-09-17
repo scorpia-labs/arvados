@@ -3,7 +3,16 @@
 // SPDX-License-Identifier: AGPL-3.0
 
 import React from 'react';
-import { writeTextToClipboard } from './clipboard-action';
+
+export const writeTextToClipboard = (text: string, onCopy?: (text: string, result: boolean) => void) => {
+    navigator.clipboard.writeText(text)
+        .then(() => {
+            if (onCopy) onCopy(text, true);
+        })
+        .catch(() => {
+            if (onCopy) onCopy(text, false);
+        });
+};
 
 export interface CopyToClipboardProps {
     text: string;
