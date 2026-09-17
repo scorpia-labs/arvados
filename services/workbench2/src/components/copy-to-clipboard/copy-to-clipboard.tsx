@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0
 
 import React from 'react';
+import { writeTextToClipboard } from './clipboard-action';
 
 export interface CopyToClipboardProps {
     text: string;
@@ -14,13 +15,7 @@ export const CopyToClipboard = ({ text, onCopy, children }: CopyToClipboardProps
     const elem = React.Children.only(children) as React.ReactElement<any>;
 
     const onClick = (event: React.MouseEvent) => {
-        navigator.clipboard.writeText(text)
-            .then(() => {
-                if (onCopy) onCopy(text, true);
-            })
-            .catch(() => {
-                if (onCopy) onCopy(text, false);
-            });
+        writeTextToClipboard(text, onCopy);
 
         if (typeof elem?.props?.onClick === 'function') {
             elem.props.onClick(event);
