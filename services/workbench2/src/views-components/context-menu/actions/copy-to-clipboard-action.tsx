@@ -21,10 +21,8 @@ export const CopyToClipboardAction = (props: CopyToClipboardActionProps) => {
                     props.onClick();
                 }
             });
-        } else {
-            if (props.onClick) {
-                props.onClick();
-            }
+        } else if (props.onClick) {
+            props.onClick();
         }
     };
 
